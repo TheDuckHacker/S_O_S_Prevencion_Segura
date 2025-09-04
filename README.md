@@ -144,9 +144,9 @@ Este proyecto está bajo la Licencia MIT. Ver el archivo `LICENSE` para más det
 
 ## 👥 Equipo de Desarrollo
 
-- **Desarrollador Principal**: [Tu nombre]
-- **Diseño UX/UI**: [Nombre del diseñador]
-- **Contenido Educativo**: [Nombre del especialista]
+- **Desarrollador Principal**: Carla Loayza 
+- **Diseño UX/UI**: Ronald Augusto Rodriguez
+- **Contenido Educativo**: Helen 
 
 ## 📞 Contacto
 
