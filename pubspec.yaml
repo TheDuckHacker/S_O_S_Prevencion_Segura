@@ -67,7 +67,7 @@ dependencies:
   record: ^5.1.2
   
   # Servicios en segundo plano
-  workmanager: ^0.5.2
+  workmanager: ^0.9.0+3
   
   # HTTP para envío de datos
   http: ^1.2.2
