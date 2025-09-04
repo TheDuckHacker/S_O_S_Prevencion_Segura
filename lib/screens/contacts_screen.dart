@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import '../utils/app_colors.dart';
 import '../services/whatsapp_service.dart';
 import '../services/auto_detection_service.dart';
+import 'whatsapp_config_screen.dart';
 
 class ContactsScreen extends StatefulWidget {
   const ContactsScreen({super.key});
@@ -140,12 +141,25 @@ class _ContactsScreenState extends State<ContactsScreen> {
             icon: const Icon(Icons.arrow_back, color: Colors.white, size: 28),
           ),
           const SizedBox(width: 15),
-          Text(
-            'Contactos de Emergencia',
-            style: Theme.of(context).textTheme.displayMedium?.copyWith(
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
+          Expanded(
+            child: Text(
+              'Contactos de Emergencia',
+              style: Theme.of(context).textTheme.displayMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
             ),
+          ),
+          IconButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const WhatsAppConfigScreen(),
+                ),
+              );
+            },
+            icon: const Icon(Icons.settings, color: Colors.white, size: 28),
           ),
         ],
       ),

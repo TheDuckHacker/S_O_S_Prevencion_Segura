@@ -915,14 +915,15 @@ class _SosScreenState extends State<SosScreen> with TickerProviderStateMixin {
       future: RealtimeWhatsAppService.isSharingLocation(),
       builder: (context, snapshot) {
         final isSharing = snapshot.data ?? false;
-        
+
         if (!isSharing) {
           return const SizedBox.shrink();
         }
 
         // Calcular tiempo restante (60 minutos desde que se activó)
         final endTime = DateTime.now().add(const Duration(minutes: 60));
-        final timeRemaining = '${endTime.hour.toString().padLeft(2, '0')}:${endTime.minute.toString().padLeft(2, '0')}';
+        final timeRemaining =
+            '${endTime.hour.toString().padLeft(2, '0')}:${endTime.minute.toString().padLeft(2, '0')}';
 
         return GestureDetector(
           onTap: () => _openLiveLocationScreen(),
@@ -939,9 +940,7 @@ class _SosScreenState extends State<SosScreen> with TickerProviderStateMixin {
   void _openLiveLocationScreen() {
     Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (context) => const LiveLocationScreen(),
-      ),
+      MaterialPageRoute(builder: (context) => const LiveLocationScreen()),
     );
   }
 }
