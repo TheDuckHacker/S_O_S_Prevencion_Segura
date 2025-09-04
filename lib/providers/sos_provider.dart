@@ -6,6 +6,7 @@ import '../services/notification_service.dart';
 import '../services/whatsapp_service.dart';
 import '../services/recording_service.dart';
 import '../services/realtime_service.dart';
+import '../services/realtime_whatsapp_service.dart';
 
 class SosProvider extends ChangeNotifier {
   bool _isSosActive = false;
@@ -95,6 +96,22 @@ class SosProvider extends ChangeNotifier {
         location: _currentLocation,
       );
 
+      // Iniciar compartir ubicación en tiempo real por WhatsApp
+      final emergencyContacts = await WhatsAppService.getEmergencyContacts();
+      final phoneNumbers = emergencyContacts
+          .where((contact) => contact['hasWhatsApp'] == true)
+          .map((contact) => contact['phone'].toString())
+          .toList();
+
+      if (phoneNumbers.isNotEmpty) {
+        await RealtimeWhatsAppService.startRealtimeLocationSharing(
+          threatDescription: _threatDescription,
+          additionalText: _threatDescription,
+          phoneNumbers: phoneNumbers,
+          durationMinutes: 60, // 1 hora de compartir ubicación
+        );
+      }
+
       // Enviar datos al servidor automáticamente
       await RealtimeService.sendEmergencyData(
         userId: 'user_${DateTime.now().millisecondsSinceEpoch}',
@@ -135,6 +152,9 @@ class SosProvider extends ChangeNotifier {
 
       // Cancelar notificaciones
       await NotificationService.cancelRecordingNotification();
+
+      // Detener compartir ubicación en tiempo real
+      await RealtimeWhatsAppService.stopRealtimeLocationSharing();
 
       notifyListeners();
     } catch (e) {

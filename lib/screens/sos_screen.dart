@@ -4,6 +4,7 @@ import '../providers/sos_provider.dart';
 import '../providers/location_provider.dart';
 import '../utils/app_colors.dart';
 import '../widgets/whatsapp_alert_button.dart';
+import '../services/realtime_whatsapp_service.dart';
 
 class SosScreen extends StatefulWidget {
   const SosScreen({super.key});
@@ -616,8 +617,13 @@ class _SosScreenState extends State<SosScreen> with TickerProviderStateMixin {
                 threatDescription: sosProvider.threatDescription,
                 additionalText: _threatController.text,
                 latitude: _getLatitudeFromLocation(sosProvider.currentLocation),
-                longitude: _getLongitudeFromLocation(sosProvider.currentLocation),
+                longitude: _getLongitudeFromLocation(
+                  sosProvider.currentLocation,
+                ),
               ),
+              const SizedBox(height: 15),
+              // Botón para detener compartir ubicación en tiempo real
+              _buildStopLocationSharingButton(),
             ],
           ),
         );
@@ -773,5 +779,72 @@ class _SosScreenState extends State<SosScreen> with TickerProviderStateMixin {
       debugPrint('Error extrayendo longitud: $e');
     }
     return '0.0';
+  }
+
+  Widget _buildStopLocationSharingButton() {
+    return FutureBuilder<bool>(
+      future: RealtimeWhatsAppService.isSharingLocation(),
+      builder: (context, snapshot) {
+        final isSharing = snapshot.data ?? false;
+        
+        if (!isSharing) {
+          return const SizedBox.shrink();
+        }
+
+        return Container(
+          width: double.infinity,
+          height: 50,
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              colors: [Colors.red, Colors.orange],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.circular(25),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.red.withOpacity(0.3),
+                blurRadius: 8,
+                offset: const Offset(0, 3),
+              ),
+            ],
+          ),
+          child: Material(
+            color: Colors.transparent,
+            child: InkWell(
+              borderRadius: BorderRadius.circular(25),
+              onTap: () => _stopLocationSharing(),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(
+                    Icons.location_off,
+                    color: Colors.white,
+                    size: 24,
+                  ),
+                  const SizedBox(width: 10),
+                  Text(
+                    'Detener Compartir Ubicación',
+                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> _stopLocationSharing() async {
+    try {
+      await RealtimeWhatsAppService.stopRealtimeLocationSharing();
+      _showMessage('Compartir ubicación en tiempo real detenido');
+    } catch (e) {
+      _showMessage('Error deteniendo compartir ubicación: $e');
+    }
   }
 }
