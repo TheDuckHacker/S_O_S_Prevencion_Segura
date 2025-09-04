@@ -1,7 +1,7 @@
 class AppConfig {
   // Configuración para diferentes entornos
   static const String _environment =
-      'development'; // 'development', 'staging', 'production'
+      'production'; // 'development', 'staging', 'production'
 
   // URLs de servidor según el entorno
   static const Map<String, String> _serverUrls = {
