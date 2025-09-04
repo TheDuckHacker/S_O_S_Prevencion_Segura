@@ -36,7 +36,7 @@ dependencies:
   cupertino_icons: ^1.0.8
   
   # Geolocalización y permisos
-  geolocator: ^11.0.0
+  geolocator: ^14.0.2
   permission_handler: ^11.3.1
   
   # Navegación y estado
