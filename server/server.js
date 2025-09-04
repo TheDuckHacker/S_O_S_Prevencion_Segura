@@ -262,6 +262,98 @@ app.get('/api/status', (req, res) => {
   });
 });
 
+// Endpoint para obtener estado de emergencia (para la página web)
+app.get('/api/emergency/status', (req, res) => {
+  try {
+    const today = moment().format('YYYY-MM-DD');
+    const emergencyFile = `data/emergency_${today}.json`;
+    const locationFile = `data/location_${today}.json`;
+    
+    let emergencyData = null;
+    let locationData = null;
+    let stats = {
+      alertsToday: 0,
+      totalAlerts: 0
+    };
+
+    // Leer datos de emergencia del día
+    if (fs.existsSync(emergencyFile)) {
+      const emergencies = JSON.parse(fs.readFileSync(emergencyFile, 'utf8'));
+      if (emergencies.length > 0) {
+        // Obtener la última emergencia activa
+        emergencyData = emergencies[emergencies.length - 1];
+        stats.alertsToday = emergencies.length;
+      }
+    }
+
+    // Leer datos de ubicación del día
+    if (fs.existsSync(locationFile)) {
+      const locations = JSON.parse(fs.readFileSync(locationFile, 'utf8'));
+      if (locations.length > 0) {
+        // Obtener la última ubicación
+        locationData = locations[locations.length - 1];
+      }
+    }
+
+    // Calcular estadísticas totales
+    const dataDir = 'data';
+    if (fs.existsSync(dataDir)) {
+      const files = fs.readdirSync(dataDir);
+      const emergencyFiles = files.filter(file => file.startsWith('emergency_'));
+      emergencyFiles.forEach(file => {
+        const filePath = path.join(dataDir, file);
+        const data = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+        stats.totalAlerts += data.length;
+      });
+    }
+
+    // Determinar si hay una alerta activa
+    const isActive = emergencyData && 
+      moment().diff(moment(emergencyData.timestamp), 'minutes') < 60; // Activa por 1 hora
+
+    const responseData = {
+      isActive,
+      alert: isActive ? {
+        isActive: true,
+        startTime: emergencyData.timestamp,
+        threatType: emergencyData.message?.split(':')[0] || 'Emergencia',
+        description: emergencyData.message || 'Alerta SOS activada'
+      } : null,
+      location: locationData ? {
+        latitude: locationData.latitude,
+        longitude: locationData.longitude,
+        accuracy: locationData.accuracy || 0,
+        speed: locationData.speed || 0,
+        timestamp: locationData.timestamp
+      } : null,
+      device: {
+        id: emergencyData?.userId || 'unknown',
+        model: 'Android Device',
+        version: '1.0.0'
+      },
+      stats
+    };
+
+    res.json({
+      success: true,
+      data: responseData
+    });
+
+  } catch (error) {
+    console.error('Error obteniendo estado de emergencia:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error obteniendo estado de emergencia',
+      error: error.message
+    });
+  }
+});
+
+// Ruta principal para servir la página web
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
 // Endpoint para obtener logs
 app.get('/api/logs/:type/:date', (req, res) => {
   try {

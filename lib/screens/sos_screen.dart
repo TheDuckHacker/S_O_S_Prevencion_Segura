@@ -21,7 +21,8 @@ class _SosScreenState extends State<SosScreen> with TickerProviderStateMixin {
   late Animation<double> _recordingRotationAnimation;
 
   final TextEditingController _threatController = TextEditingController();
-  final TextEditingController _additionalDescriptionController = TextEditingController();
+  final TextEditingController _additionalDescriptionController =
+      TextEditingController();
   String _selectedThreatType = 'Me siguen';
 
   final List<String> _threatTypes = [
@@ -847,7 +848,6 @@ class _SosScreenState extends State<SosScreen> with TickerProviderStateMixin {
   void _showStorageInfo() {
     RecordingService.showStorageInfo(context);
   }
-
 
   List<String> _getEmergencyContacts() {
     // Obtener contactos de emergencia desde WhatsAppService
