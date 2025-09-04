@@ -64,7 +64,7 @@ dependencies:
   flutter_local_notifications: ^17.2.3
   
   # Grabación de audio
-  record: ^5.1.2
+  record: ^6.1.1
   
   # Servicios en segundo plano
   workmanager: ^0.5.2
