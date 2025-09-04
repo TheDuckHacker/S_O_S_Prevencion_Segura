@@ -3,7 +3,6 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:async';
-import 'whatsapp_business_api.dart';
 import 'native_location_sharing.dart';
 
 class RealtimeWhatsAppService {
@@ -170,33 +169,8 @@ class RealtimeWhatsAppService {
 
 *Ubicación en tiempo real - Prevención Segura*''';
 
-      // Intentar usar WhatsApp Business API primero
-      if (WhatsAppBusinessAPI.isConfigured()) {
-        debugPrint(
-          '🚀 Usando WhatsApp Business API para ubicación en tiempo real',
-        );
-
-        final results = await WhatsAppBusinessAPI.sendToMultipleContacts(
-          phoneNumbers: phoneNumbers,
-          latitude: position.latitude,
-          longitude: position.longitude,
-          threatDescription: threatDescription,
-          durationMinutes: 60,
-        );
-
-        int successCount = 0;
-        for (final result in results.values) {
-          if (result) successCount++;
-        }
-
-        debugPrint(
-          '✅ WhatsApp Business API: $successCount/${phoneNumbers.length} mensajes enviados',
-        );
-        return;
-      }
-
-      // Fallback: usar método tradicional
-      debugPrint('📱 Usando método tradicional de WhatsApp');
+      // Usar método tradicional de WhatsApp
+      debugPrint('📱 Enviando ubicación por WhatsApp');
       // Enviar a todos los números
       for (final phoneNumber in phoneNumbers) {
         await _sendWhatsAppMessage(phoneNumber, message);
