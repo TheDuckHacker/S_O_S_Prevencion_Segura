@@ -38,7 +38,7 @@ class RealtimeWhatsAppService {
     _locationTimer = Timer.periodic(
       const Duration(seconds: 30),
       (timer) async {
-        await _sendLocationUpdate(phoneNumbers);
+        await _sendLocationUpdate(phoneNumbers, threatDescription: threatDescription, additionalText: additionalText);
       },
     );
 
@@ -112,7 +112,7 @@ class RealtimeWhatsAppService {
   }
 
   // Enviar actualización de ubicación
-  static Future<void> _sendLocationUpdate(List<String> phoneNumbers) async {
+  static Future<void> _sendLocationUpdate(List<String> phoneNumbers, {String threatDescription = '', String additionalText = ''}) async {
     try {
       final position = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.bestForNavigation,
@@ -122,13 +122,20 @@ class RealtimeWhatsAppService {
       final location = '${position.latitude}, ${position.longitude}';
       final googleMapsUrl = 'https://maps.google.com/?q=${position.latitude},${position.longitude}';
 
-      final message = '''📍 *ACTUALIZACIÓN DE UBICACIÓN*
+      final message = '''📍 *ACTUALIZACIÓN DE UBICACIÓN EN TIEMPO REAL*
+
+*Descripción de la amenaza:* $threatDescription${additionalText.isNotEmpty ? ' - $additionalText' : ''}
 
 *Ubicación actual:* $location
 *Precisión:* ${position.accuracy.toStringAsFixed(1)}m
 *Hora:* ${DateTime.now().toString()}
 
 🔗 *Ver en Google Maps:* $googleMapsUrl
+
+🔄 *UBICACIÓN EN TIEMPO REAL ACTIVA*
+• Se actualiza automáticamente cada 30 segundos
+• Duración: 60 minutos
+• La ubicación se comparte en tiempo real
 
 *Ubicación en tiempo real - Prevención Segura*''';
 

@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
 import 'package:path_provider/path_provider.dart';
@@ -14,39 +13,83 @@ class RecordingService {
     try {
       final cameras = await availableCameras();
       if (cameras.isNotEmpty) {
+        // Intentar con la cámara trasera primero
+        CameraDescription? selectedCamera;
+        
+        for (final camera in cameras) {
+          if (camera.lensDirection == CameraLensDirection.back) {
+            selectedCamera = camera;
+            break;
+          }
+        }
+        
+        // Si no hay cámara trasera, usar la primera disponible
+        selectedCamera ??= cameras.first;
+        
         _cameraController = CameraController(
-          cameras.first,
-          ResolutionPreset.medium,
-          enableAudio: true,
+          selectedCamera,
+          ResolutionPreset.low, // Usar resolución baja para evitar problemas
+          enableAudio: false, // Deshabilitar audio para evitar conflictos
         );
+        
         await _cameraController!.initialize();
+        debugPrint('Cámara inicializada correctamente: ${selectedCamera.name}');
+      } else {
+        debugPrint('No se encontraron cámaras disponibles');
       }
     } catch (e) {
       debugPrint('Error inicializando cámara: $e');
+      
+      // Intentar liberar recursos si hay error
+      try {
+        await _cameraController?.dispose();
+        _cameraController = null;
+      } catch (disposeError) {
+        debugPrint('Error liberando cámara: $disposeError');
+      }
     }
   }
 
   // Iniciar grabación de video
   static Future<bool> startVideoRecording() async {
     try {
+      // Verificar si ya se está grabando
+      if (_isRecordingVideo) {
+        debugPrint('Ya se está grabando un video');
+        return true;
+      }
+
+      // Intentar inicializar la cámara si no está lista
       if (_cameraController == null || !_cameraController!.value.isInitialized) {
         await initializeCamera();
       }
 
-      if (_cameraController != null && _cameraController!.value.isInitialized) {
-        final directory = await getApplicationDocumentsDirectory();
-        final path = '${directory.path}/evidence_${DateTime.now().millisecondsSinceEpoch}.mp4';
-        
-        await _cameraController!.startVideoRecording();
-        _isRecordingVideo = true;
-        _evidenceFiles.add(path);
-        
-        debugPrint('Grabación de video iniciada: $path');
-        return true;
+      // Verificar si la cámara está disponible
+      if (_cameraController == null || !_cameraController!.value.isInitialized) {
+        debugPrint('Cámara no disponible para grabación');
+        return false;
       }
-      return false;
+
+      final directory = await getApplicationDocumentsDirectory();
+      final path = '${directory.path}/evidence_${DateTime.now().millisecondsSinceEpoch}.mp4';
+      
+      await _cameraController!.startVideoRecording();
+      _isRecordingVideo = true;
+      _evidenceFiles.add(path);
+      
+      debugPrint('Grabación de video iniciada: $path');
+      return true;
     } catch (e) {
       debugPrint('Error iniciando grabación de video: $e');
+      
+      // Intentar liberar recursos en caso de error
+      try {
+        await _cameraController?.dispose();
+        _cameraController = null;
+      } catch (disposeError) {
+        debugPrint('Error liberando cámara después de error: $disposeError');
+      }
+      
       return false;
     }
   }
@@ -121,6 +164,13 @@ class RecordingService {
     if (_cameraController != null) {
       await _cameraController!.dispose();
       _cameraController = null;
+      _isRecordingVideo = false;
+      debugPrint('Recursos de cámara liberados');
     }
+  }
+
+  // Verificar si la cámara está disponible
+  static bool isCameraAvailable() {
+    return _cameraController != null && _cameraController!.value.isInitialized;
   }
 }

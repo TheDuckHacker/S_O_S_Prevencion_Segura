@@ -786,7 +786,7 @@ class _SosScreenState extends State<SosScreen> with TickerProviderStateMixin {
       future: RealtimeWhatsAppService.isSharingLocation(),
       builder: (context, snapshot) {
         final isSharing = snapshot.data ?? false;
-        
+
         if (!isSharing) {
           return const SizedBox.shrink();
         }
@@ -817,11 +817,7 @@ class _SosScreenState extends State<SosScreen> with TickerProviderStateMixin {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(
-                    Icons.location_off,
-                    color: Colors.white,
-                    size: 24,
-                  ),
+                  const Icon(Icons.location_off, color: Colors.white, size: 24),
                   const SizedBox(width: 10),
                   Text(
                     'Detener Compartir Ubicación',

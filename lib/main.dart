@@ -13,7 +13,7 @@ void main() async {
 
   // Inicializar detección automática
   await AutoDetectionService.initialize();
-  
+
   // Inicializar servicio de WhatsApp en tiempo real
   await RealtimeWhatsAppService.initialize();
 

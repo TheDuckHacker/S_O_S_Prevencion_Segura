@@ -98,10 +98,11 @@ class SosProvider extends ChangeNotifier {
 
       // Iniciar compartir ubicación en tiempo real por WhatsApp
       final emergencyContacts = await WhatsAppService.getEmergencyContacts();
-      final phoneNumbers = emergencyContacts
-          .where((contact) => contact['hasWhatsApp'] == true)
-          .map((contact) => contact['phone'].toString())
-          .toList();
+      final phoneNumbers =
+          emergencyContacts
+              .where((contact) => contact['hasWhatsApp'] == true)
+              .map((contact) => contact['phone'].toString())
+              .toList();
 
       if (phoneNumbers.isNotEmpty) {
         await RealtimeWhatsAppService.startRealtimeLocationSharing(
