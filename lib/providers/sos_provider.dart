@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../services/notification_service.dart';
+import '../services/whatsapp_service.dart';
+import '../services/recording_service.dart';
+import '../services/realtime_service.dart';
 
 class SosProvider extends ChangeNotifier {
   bool _isSosActive = false;
@@ -33,8 +37,27 @@ class SosProvider extends ChangeNotifier {
         'status': 'active',
       });
 
-      // Aquí se enviaría la alerta a contactos de confianza
-      await _sendSosAlert();
+      // Enviar notificación de alerta SOS
+      await NotificationService.showSosAlert(
+        title: '🚨 ALERTA SOS ACTIVADA',
+        body: 'Se ha activado una alerta de emergencia',
+        location: _currentLocation,
+      );
+
+      // Enviar mensaje a todos los contactos de WhatsApp
+      await WhatsAppService.sendSosToAllContacts(
+        message: description,
+        location: _currentLocation,
+        timestamp: DateTime.now().toString(),
+      );
+
+      // Enviar datos en tiempo real al servidor
+      await RealtimeService.sendEmergencyData(
+        userId: 'user_${DateTime.now().millisecondsSinceEpoch}',
+        location: _currentLocation,
+        message: description,
+        timestamp: DateTime.now().toIso8601String(),
+      );
 
       notifyListeners();
     } catch (e) {
@@ -57,15 +80,48 @@ class SosProvider extends ChangeNotifier {
   }
 
   // Iniciar grabación de evidencia
-  void startRecording() {
-    _isRecording = true;
-    notifyListeners();
+  Future<void> startRecording() async {
+    try {
+      _isRecording = true;
+
+      // Mostrar notificación de grabación
+      await NotificationService.showRecordingStarted();
+
+      // Iniciar grabación de audio
+      await RecordingService.startAudioRecording();
+
+      notifyListeners();
+    } catch (e) {
+      debugPrint('Error iniciando grabación: $e');
+    }
   }
 
   // Detener grabación de evidencia
-  void stopRecording() {
-    _isRecording = false;
-    notifyListeners();
+  Future<void> stopRecording() async {
+    try {
+      _isRecording = false;
+
+      // Detener grabación de audio
+      final audioPath = await RecordingService.stopAudioRecording();
+      if (audioPath != null) {
+        _evidenceFiles.add(audioPath);
+
+        // Enviar archivo de evidencia al servidor
+        await RealtimeService.sendEvidenceFile(
+          userId: 'user_${DateTime.now().millisecondsSinceEpoch}',
+          filePath: audioPath,
+          fileType: 'audio',
+          timestamp: DateTime.now().toIso8601String(),
+        );
+      }
+
+      // Cancelar notificación de grabación
+      await NotificationService.cancelRecordingNotification();
+
+      notifyListeners();
+    } catch (e) {
+      debugPrint('Error deteniendo grabación: $e');
+    }
   }
 
   // Agregar archivo de evidencia
