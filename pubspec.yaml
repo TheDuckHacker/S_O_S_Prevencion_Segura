@@ -61,7 +61,7 @@ dependencies:
   # telephony: ^0.2.0  # Removido por problemas de namespace
   
   # Notificaciones
-  flutter_local_notifications: ^17.2.3
+  flutter_local_notifications: ^19.4.1
   
   # Grabación de audio
   # record: ^5.1.2  # Removido por problemas de compatibilidad
