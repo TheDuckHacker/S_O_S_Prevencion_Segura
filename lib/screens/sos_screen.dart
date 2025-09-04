@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../providers/sos_provider.dart';
 import '../providers/location_provider.dart';
 import '../utils/app_colors.dart';
+import '../widgets/whatsapp_alert_button.dart';
 
 class SosScreen extends StatefulWidget {
   const SosScreen({super.key});
@@ -609,6 +610,14 @@ class _SosScreenState extends State<SosScreen> with TickerProviderStateMixin {
                   ),
                 ],
               ),
+              const SizedBox(height: 20),
+              // Botón de WhatsApp para enviar alerta
+              WhatsAppAlertButton(
+                threatDescription: sosProvider.threatDescription,
+                additionalText: _threatController.text,
+                latitude: _getLatitudeFromLocation(sosProvider.currentLocation),
+                longitude: _getLongitudeFromLocation(sosProvider.currentLocation),
+              ),
             ],
           ),
         );
@@ -735,5 +744,34 @@ class _SosScreenState extends State<SosScreen> with TickerProviderStateMixin {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       ),
     );
+  }
+
+  String _getLatitudeFromLocation(String location) {
+    try {
+      // Formato esperado: "lat, lng (Precisión: X.Xm)"
+      final parts = location.split(',');
+      if (parts.isNotEmpty) {
+        return parts[0].trim();
+      }
+    } catch (e) {
+      debugPrint('Error extrayendo latitud: $e');
+    }
+    return '0.0';
+  }
+
+  String _getLongitudeFromLocation(String location) {
+    try {
+      // Formato esperado: "lat, lng (Precisión: X.Xm)"
+      final parts = location.split(',');
+      if (parts.length >= 2) {
+        // Remover la parte de precisión si existe
+        final lngPart = parts[1].trim();
+        final lngParts = lngPart.split(' ');
+        return lngParts[0].trim();
+      }
+    } catch (e) {
+      debugPrint('Error extrayendo longitud: $e');
+    }
+    return '0.0';
   }
 }
