@@ -6,6 +6,8 @@ import '../utils/app_colors.dart';
 import '../widgets/whatsapp_alert_button.dart';
 import '../services/realtime_whatsapp_service.dart';
 import '../services/recording_service.dart';
+import '../widgets/live_location_widget.dart';
+import 'live_location_screen.dart';
 
 class SosScreen extends StatefulWidget {
   const SosScreen({super.key});
@@ -660,6 +662,9 @@ class _SosScreenState extends State<SosScreen> with TickerProviderStateMixin {
                 ),
               ),
               const SizedBox(height: 15),
+              // Widget de ubicación en tiempo real
+              _buildLiveLocationWidget(),
+              const SizedBox(height: 15),
               // Botón para detener compartir ubicación en tiempo real
               _buildStopLocationSharingButton(),
             ],
@@ -903,5 +908,40 @@ class _SosScreenState extends State<SosScreen> with TickerProviderStateMixin {
 
   void _showStorageInfo() {
     RecordingService.showStorageInfo(context);
+  }
+
+  Widget _buildLiveLocationWidget() {
+    return FutureBuilder<bool>(
+      future: RealtimeWhatsAppService.isSharingLocation(),
+      builder: (context, snapshot) {
+        final isSharing = snapshot.data ?? false;
+        
+        if (!isSharing) {
+          return const SizedBox.shrink();
+        }
+
+        // Calcular tiempo restante (60 minutos desde que se activó)
+        final endTime = DateTime.now().add(const Duration(minutes: 60));
+        final timeRemaining = '${endTime.hour.toString().padLeft(2, '0')}:${endTime.minute.toString().padLeft(2, '0')}';
+
+        return GestureDetector(
+          onTap: () => _openLiveLocationScreen(),
+          child: LiveLocationCompactWidget(
+            isSharing: isSharing,
+            onStopSharing: () => _stopLocationSharing(),
+            timeRemaining: timeRemaining,
+          ),
+        );
+      },
+    );
+  }
+
+  void _openLiveLocationScreen() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const LiveLocationScreen(),
+      ),
+    );
   }
 }
