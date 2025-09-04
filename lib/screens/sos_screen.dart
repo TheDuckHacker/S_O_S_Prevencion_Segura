@@ -308,11 +308,12 @@ class _SosScreenState extends State<SosScreen> with TickerProviderStateMixin {
             ),
             style: const TextStyle(color: Colors.white),
           ),
-          
+
           // Botón para actualizar descripción cuando SOS esté activo
           Consumer<SosProvider>(
             builder: (context, sosProvider, child) {
-              if (sosProvider.isSosActive && _threatController.text.isNotEmpty) {
+              if (sosProvider.isSosActive &&
+                  _threatController.text.isNotEmpty) {
                 return Padding(
                   padding: const EdgeInsets.only(top: 10),
                   child: SizedBox(
@@ -544,12 +545,18 @@ class _SosScreenState extends State<SosScreen> with TickerProviderStateMixin {
                       decoration: BoxDecoration(
                         color: Colors.white.withOpacity(0.2),
                         borderRadius: BorderRadius.circular(25),
-                        border: Border.all(color: Colors.white.withOpacity(0.3)),
+                        border: Border.all(
+                          color: Colors.white.withOpacity(0.3),
+                        ),
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(Icons.share_location, color: Colors.white, size: 18),
+                          Icon(
+                            Icons.share_location,
+                            color: Colors.white,
+                            size: 18,
+                          ),
                           const SizedBox(width: 6),
                           Text(
                             'Compartir',
@@ -563,7 +570,7 @@ class _SosScreenState extends State<SosScreen> with TickerProviderStateMixin {
                       ),
                     ),
                   ),
-                  
+
                   // Botón para abrir permisos de ubicación
                   GestureDetector(
                     onTap: () => _openLocationPermissions(),
@@ -575,12 +582,18 @@ class _SosScreenState extends State<SosScreen> with TickerProviderStateMixin {
                       decoration: BoxDecoration(
                         color: Colors.white.withOpacity(0.2),
                         borderRadius: BorderRadius.circular(25),
-                        border: Border.all(color: Colors.white.withOpacity(0.3)),
+                        border: Border.all(
+                          color: Colors.white.withOpacity(0.3),
+                        ),
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(Icons.location_on, color: Colors.white, size: 18),
+                          Icon(
+                            Icons.location_on,
+                            color: Colors.white,
+                            size: 18,
+                          ),
                           const SizedBox(width: 6),
                           Text(
                             'Permisos',
@@ -615,7 +628,8 @@ class _SosScreenState extends State<SosScreen> with TickerProviderStateMixin {
               ? '$_selectedThreatType: ${_threatController.text}'
               : _selectedThreatType;
 
-      sosProvider.activateSos(description);
+      sosProvider.updateThreatDescription(description);
+      sosProvider.activateSos();
       _showMessage('Alerta SOS activada');
     }
   }
@@ -691,7 +705,10 @@ class _SosScreenState extends State<SosScreen> with TickerProviderStateMixin {
 
   void _openLocationPermissions() async {
     try {
-      final locationProvider = Provider.of<LocationProvider>(context, listen: false);
+      final locationProvider = Provider.of<LocationProvider>(
+        context,
+        listen: false,
+      );
       await locationProvider.requestLocationPermission();
       _showMessage('Permisos de ubicación solicitados');
     } catch (e) {

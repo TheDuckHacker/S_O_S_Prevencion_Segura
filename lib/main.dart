@@ -5,8 +5,14 @@ import 'providers/sos_provider.dart';
 import 'providers/education_provider.dart';
 import 'providers/location_provider.dart';
 import 'utils/app_colors.dart';
+import 'services/auto_detection_service.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // Inicializar detección automática
+  await AutoDetectionService.initialize();
+
   runApp(const MiApp());
 }
 

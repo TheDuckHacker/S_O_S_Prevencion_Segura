@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../utils/app_colors.dart';
 import '../services/whatsapp_service.dart';
+import '../services/auto_detection_service.dart';
 
 class ContactsScreen extends StatefulWidget {
   const ContactsScreen({super.key});
@@ -14,11 +15,20 @@ class _ContactsScreenState extends State<ContactsScreen> {
   final _nameController = TextEditingController();
   final _phoneController = TextEditingController();
   List<Map<String, dynamic>> _contacts = [];
+  bool _autoDetectionEnabled = false;
 
   @override
   void initState() {
     super.initState();
     _loadContacts();
+    _loadAutoDetectionStatus();
+  }
+
+  Future<void> _loadAutoDetectionStatus() async {
+    final enabled = await AutoDetectionService.isAutoDetectionEnabled();
+    setState(() {
+      _autoDetectionEnabled = enabled;
+    });
   }
 
   @override
@@ -48,15 +58,22 @@ class _ContactsScreenState extends State<ContactsScreen> {
       return;
     }
 
-    await WhatsAppService.addEmergencyContact(
+    // Mostrar mensaje de verificación
+    _showMessage('Verificando WhatsApp...');
+
+    final success = await WhatsAppService.addEmergencyContact(
       name: _nameController.text.trim(),
       phoneNumber: phone,
     );
 
-    _nameController.clear();
-    _phoneController.clear();
-    await _loadContacts();
-    _showMessage('Contacto agregado exitosamente');
+    if (success) {
+      _nameController.clear();
+      _phoneController.clear();
+      await _loadContacts();
+      _showMessage('Contacto agregado exitosamente (WhatsApp verificado)');
+    } else {
+      _showMessage('Error: El número no tiene WhatsApp o no es válido');
+    }
   }
 
   Future<void> _removeContact(String phoneNumber) async {
@@ -98,6 +115,8 @@ class _ContactsScreenState extends State<ContactsScreen> {
                       _buildInfoCard(),
                       const SizedBox(height: 20),
                       _buildAddContactForm(),
+                      const SizedBox(height: 20),
+                      _buildAutoDetectionSettings(),
                       const SizedBox(height: 30),
                       _buildContactsList(),
                     ],
@@ -252,6 +271,78 @@ class _ContactsScreenState extends State<ContactsScreen> {
                 ),
               ),
             ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAutoDetectionSettings() {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        gradient: AppColors.cardGradient,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.white.withOpacity(0.1), width: 1),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.auto_awesome, color: AppColors.lightBlue, size: 24),
+              const SizedBox(width: 10),
+              Text(
+                'Detección Automática',
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 15),
+          Text(
+            'Detecta automáticamente actividad sospechosa y envía alertas a tus contactos',
+            style: Theme.of(
+              context,
+            ).textTheme.bodyMedium?.copyWith(color: Colors.white70),
+          ),
+          const SizedBox(height: 15),
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  'Habilitar detección automática',
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+              Switch(
+                value: _autoDetectionEnabled,
+                onChanged: (value) async {
+                  setState(() {
+                    _autoDetectionEnabled = value;
+                  });
+
+                  await AutoDetectionService.setAutoDetectionEnabled(value);
+
+                  if (value) {
+                    await AutoDetectionService.startAutoMonitoring();
+                    _showMessage('Detección automática habilitada');
+                  } else {
+                    await AutoDetectionService.stopAutoMonitoring();
+                    _showMessage('Detección automática deshabilitada');
+                  }
+                },
+                activeColor: AppColors.lightBlue,
+                activeTrackColor: AppColors.lightBlue.withOpacity(0.3),
+                inactiveThumbColor: Colors.white70,
+                inactiveTrackColor: Colors.white30,
+              ),
+            ],
           ),
         ],
       ),

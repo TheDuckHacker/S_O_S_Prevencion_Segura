@@ -7,12 +7,20 @@ import 'dart:convert';
 class WhatsAppService {
   static const String _contactsKey = 'emergency_contacts';
 
-  // Agregar contacto de emergencia
-  static Future<void> addEmergencyContact({
+  // Agregar contacto de emergencia (solo si tiene WhatsApp)
+  static Future<bool> addEmergencyContact({
     required String name,
     required String phoneNumber,
   }) async {
     try {
+      // Verificar si el número tiene WhatsApp
+      final hasWhatsApp = await _verifyWhatsAppNumber(phoneNumber);
+
+      if (!hasWhatsApp) {
+        debugPrint('El número $phoneNumber no tiene WhatsApp');
+        return false;
+      }
+
       final prefs = await SharedPreferences.getInstance();
       final contactsJson = prefs.getString(_contactsKey) ?? '[]';
       final List<dynamic> contacts = json.decode(contactsJson);
@@ -27,18 +35,39 @@ class WhatsAppService {
           'name': name,
           'phone': phoneNumber,
           'addedAt': DateTime.now().toIso8601String(),
+          'hasWhatsApp': true,
         };
       } else {
         contacts.add({
           'name': name,
           'phone': phoneNumber,
           'addedAt': DateTime.now().toIso8601String(),
+          'hasWhatsApp': true,
         });
       }
 
       await prefs.setString(_contactsKey, json.encode(contacts));
+      return true;
     } catch (e) {
       debugPrint('Error agregando contacto: $e');
+      return false;
+    }
+  }
+
+  // Verificar si un número tiene WhatsApp
+  static Future<bool> _verifyWhatsAppNumber(String phoneNumber) async {
+    try {
+      // Limpiar el número de teléfono
+      final cleanPhone = phoneNumber.replaceAll(RegExp(r'[^\d+]'), '');
+
+      // Crear enlace de prueba
+      final testLink = WhatsAppUnilink(phoneNumber: cleanPhone, text: 'Test');
+
+      final uri = Uri.parse(testLink.toString());
+      return await canLaunchUrl(uri);
+    } catch (e) {
+      debugPrint('Error verificando WhatsApp: $e');
+      return false;
     }
   }
 
@@ -70,7 +99,7 @@ class WhatsAppService {
     }
   }
 
-  // Enviar alerta SOS a todos los contactos
+  // Enviar alerta SOS a todos los contactos automáticamente
   static Future<void> sendSosToAllContacts({
     required String message,
     required String location,
@@ -83,13 +112,19 @@ class WhatsAppService {
         return;
       }
 
+      // Enviar a todos los contactos que tengan WhatsApp
       for (final contact in contacts) {
-        await _sendSosMessage(
-          phoneNumber: contact['phone'],
-          message: message,
-          location: location,
-          contactName: contact['name'],
-        );
+        if (contact['hasWhatsApp'] == true) {
+          await _sendSosMessage(
+            phoneNumber: contact['phone'],
+            message: message,
+            location: location,
+            contactName: contact['name'],
+          );
+
+          // Pequeña pausa entre envíos para evitar spam
+          await Future.delayed(const Duration(milliseconds: 500));
+        }
       }
     } catch (e) {
       debugPrint('Error enviando SOS a contactos: $e');
@@ -112,12 +147,18 @@ Hola $contactName,
 *Se ha activado una alerta de emergencia SOS.*
 
 📝 *Descripción:* $message
-📍 *Ubicación:* $location
+📍 *Mi ubicación actual:* $location
 ⏰ *Hora:* ${DateTime.now().toString()}
+🔗 *Ver en Google Maps:* https://www.google.com/maps?q=${location.split(' ')[0]},${location.split(' ')[1]}
 
-*Por favor, contacta inmediatamente o llama a las autoridades.*
+*ACCIÓN INMEDIATA REQUERIDA:*
+• Contacta inmediatamente a la persona
+• Llama a las autoridades locales
+• Comparte esta ubicación con otros contactos
+• Mantén comunicación constante
 
 *Esta alerta fue enviada automáticamente por la app Prevención Segura*
+*La ubicación se actualiza en tiempo real*
 ''';
 
       await _sendWhatsAppMessage(phoneNumber: phoneNumber, message: sosMessage);

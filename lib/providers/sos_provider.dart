@@ -89,19 +89,31 @@ class SosProvider extends ChangeNotifier {
         location: _currentLocation,
       );
 
-      // Enviar por WhatsApp
+      // Enviar por WhatsApp automáticamente
       await WhatsAppService.sendSosToAllContacts(
         message: _threatDescription,
         location: _currentLocation,
       );
 
-      // Enviar datos al servidor
+      // Enviar datos al servidor automáticamente
       await RealtimeService.sendEmergencyData(
         userId: 'user_${DateTime.now().millisecondsSinceEpoch}',
         message: _threatDescription,
         location: _currentLocation,
         timestamp: DateTime.now().toIso8601String(),
       );
+
+      // Enviar ubicación en tiempo real al servidor
+      final locationParts = _currentLocation.split(',');
+      if (locationParts.length >= 2) {
+        await RealtimeService.sendLocationUpdate(
+          userId: 'user_${DateTime.now().millisecondsSinceEpoch}',
+          latitude: double.tryParse(locationParts[0]) ?? 0.0,
+          longitude: double.tryParse(locationParts[1]) ?? 0.0,
+          location: _currentLocation,
+          timestamp: DateTime.now().toIso8601String(),
+        );
+      }
 
       notifyListeners();
     } catch (e) {
