@@ -8,6 +8,7 @@ import '../services/realtime_whatsapp_service.dart';
 import '../services/recording_service.dart';
 import '../widgets/live_location_widget.dart';
 import '../widgets/live_location_status_widget.dart';
+import '../widgets/native_whatsapp_location_button.dart';
 import 'live_location_screen.dart';
 
 class SosScreen extends StatefulWidget {
@@ -663,6 +664,14 @@ class _SosScreenState extends State<SosScreen> with TickerProviderStateMixin {
                 ),
               ),
               const SizedBox(height: 15),
+              // Botón nativo para compartir ubicación en tiempo real
+              NativeWhatsAppLocationButton(
+                threatDescription: sosProvider.threatDescription,
+                additionalText: _additionalDescriptionController.text,
+                phoneNumbers: _getEmergencyContacts(),
+                durationMinutes: 60,
+              ),
+              const SizedBox(height: 15),
               // Widget de estado de ubicación en tiempo real
               const LiveLocationStatusWidget(),
               const SizedBox(height: 15),
@@ -946,5 +955,11 @@ class _SosScreenState extends State<SosScreen> with TickerProviderStateMixin {
       context,
       MaterialPageRoute(builder: (context) => const LiveLocationScreen()),
     );
+  }
+
+  List<String> _getEmergencyContacts() {
+    // Obtener contactos de emergencia desde WhatsAppService
+    // Por ahora retornamos una lista vacía, se puede implementar después
+    return [];
   }
 }

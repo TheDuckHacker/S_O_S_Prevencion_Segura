@@ -30,7 +30,9 @@ class RealtimeWhatsAppService {
     debugPrint('🚀 Iniciando compartir ubicación en tiempo real por WhatsApp');
 
     // Intentar usar el servicio nativo primero
-    debugPrint('🚀 Intentando usar servicio nativo para ubicación en tiempo real');
+    debugPrint(
+      '🚀 Intentando usar servicio nativo para ubicación en tiempo real',
+    );
     final nativeSuccess = await NativeLocationSharing.shareLiveLocation(
       phoneNumbers: phoneNumbers,
       threatDescription: threatDescription,
@@ -75,10 +77,10 @@ class RealtimeWhatsAppService {
     _locationTimer = null;
 
     await _saveSharingStatus(false, 0);
-    
+
     // Detener servicio nativo si está activo
     await NativeLocationSharing.stopLiveLocationSharing();
-    
+
     debugPrint('🛑 Deteniendo compartir ubicación en tiempo real');
   }
 
@@ -86,10 +88,10 @@ class RealtimeWhatsAppService {
   static Future<bool> isSharingLocation() async {
     final prefs = await SharedPreferences.getInstance();
     final localSharing = prefs.getBool(_isSharingKey) ?? false;
-    
+
     // También verificar el servicio nativo
     final nativeSharing = await NativeLocationSharing.isSharingLocation();
-    
+
     return localSharing || nativeSharing;
   }
 

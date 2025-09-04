@@ -16,11 +16,13 @@ class NativeLocationSharingPlugin: FlutterPlugin, MethodCallHandler {
     private lateinit var context: Context
     private var isSharingLocation = false
     private var sharingInfo: MutableMap<String, Any> = mutableMapOf()
+    private lateinit var whatsAppLocationSharing: WhatsAppLocationSharing
 
     override fun onAttachedToEngine(flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
         channel = MethodChannel(flutterPluginBinding.binaryMessenger, "native_location_sharing")
         channel.setMethodCallHandler(this)
         context = flutterPluginBinding.applicationContext
+        whatsAppLocationSharing = WhatsAppLocationSharing(context)
     }
 
     override fun onMethodCall(call: MethodCall, result: Result) {
@@ -59,10 +61,16 @@ class NativeLocationSharingPlugin: FlutterPlugin, MethodCallHandler {
             // Crear mensaje para WhatsApp
             val message = createWhatsAppMessage(latitude, longitude, threatDescription, durationMinutes)
             
-            // Enviar a cada número
+            // Enviar a cada número usando la nueva implementación
             var successCount = 0
             for (phoneNumber in phoneNumbers) {
-                if (sendToWhatsApp(phoneNumber, message, latitude, longitude)) {
+                if (whatsAppLocationSharing.shareLiveLocation(
+                    phoneNumber = phoneNumber,
+                    latitude = latitude,
+                    longitude = longitude,
+                    threatDescription = threatDescription,
+                    durationMinutes = durationMinutes
+                )) {
                     successCount++
                 }
             }
@@ -120,17 +128,26 @@ class NativeLocationSharingPlugin: FlutterPlugin, MethodCallHandler {
             val cleanNumber = phoneNumber.replace(Regex("[^0-9+]"), "")
             val formattedNumber = if (cleanNumber.startsWith("+")) cleanNumber else "+$cleanNumber"
             
-            // Crear URL de WhatsApp con ubicación
+            Log.d("NativeLocationSharing", "Intentando compartir ubicación en tiempo real con $formattedNumber")
+            
+            // Intentar usar la funcionalidad nativa de WhatsApp para compartir ubicación
+            val success = shareLiveLocationNative(formattedNumber, latitude, longitude, message)
+            
+            if (success) {
+                Log.d("NativeLocationSharing", "Ubicación en tiempo real compartida exitosamente")
+                return true
+            }
+            
+            // Fallback: usar método tradicional
+            Log.d("NativeLocationSharing", "Usando método tradicional como fallback")
             val whatsappUrl = "https://wa.me/$formattedNumber?text=${Uri.encode(message)}"
             
-            // Crear intent para abrir WhatsApp
             val intent = Intent(Intent.ACTION_VIEW).apply {
                 data = Uri.parse(whatsappUrl)
                 setPackage("com.whatsapp")
                 addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             }
 
-            // Verificar si WhatsApp está instalado
             if (intent.resolveActivity(context.packageManager) != null) {
                 context.startActivity(intent)
                 Log.d("NativeLocationSharing", "WhatsApp abierto para $formattedNumber")
@@ -141,6 +158,57 @@ class NativeLocationSharingPlugin: FlutterPlugin, MethodCallHandler {
             }
         } catch (e: Exception) {
             Log.e("NativeLocationSharing", "Error enviando a WhatsApp: ${e.message}")
+            false
+        }
+    }
+
+    private fun shareLiveLocationNative(phoneNumber: String, latitude: Double, longitude: Double, message: String): Boolean {
+        return try {
+            // Crear intent para compartir ubicación en tiempo real usando la API nativa de WhatsApp
+            val intent = Intent().apply {
+                action = Intent.ACTION_SEND
+                type = "text/plain"
+                setPackage("com.whatsapp")
+                
+                // Intentar usar la funcionalidad de ubicación en tiempo real
+                putExtra(Intent.EXTRA_TEXT, message)
+                putExtra("android.intent.extra.LOCATION", "geo:$latitude,$longitude")
+                putExtra("android.intent.extra.SUBJECT", "Ubicación en Tiempo Real - SOS")
+                
+                // Intentar abrir directamente el chat con el número
+                data = Uri.parse("https://wa.me/$phoneNumber")
+                
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+            }
+
+            // Verificar si WhatsApp puede manejar este intent
+            if (intent.resolveActivity(context.packageManager) != null) {
+                context.startActivity(intent)
+                Log.d("NativeLocationSharing", "Intent nativo enviado a WhatsApp")
+                return true
+            }
+
+            // Segundo intent: usar la funcionalidad de compartir ubicación
+            val locationIntent = Intent().apply {
+                action = Intent.ACTION_SEND
+                type = "text/plain"
+                setPackage("com.whatsapp")
+                putExtra(Intent.EXTRA_TEXT, "🚨 COMPARTIR UBICACIÓN EN TIEMPO REAL 🚨\n\n$message")
+                putExtra("android.intent.extra.LOCATION", "geo:$latitude,$longitude")
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            }
+
+            if (locationIntent.resolveActivity(context.packageManager) != null) {
+                context.startActivity(locationIntent)
+                Log.d("NativeLocationSharing", "Intent de ubicación enviado a WhatsApp")
+                return true
+            }
+
+            Log.w("NativeLocationSharing", "WhatsApp no puede manejar intents nativos de ubicación")
+            false
+        } catch (e: Exception) {
+            Log.e("NativeLocationSharing", "Error en shareLiveLocationNative: ${e.message}")
             false
         }
     }
