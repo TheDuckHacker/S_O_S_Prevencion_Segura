@@ -1,0 +1,119 @@
+name: ✨ Solicitar Feature
+description: Sugiere una nueva funcionalidad para la aplicación
+title: "[Feature]: "
+labels: ["enhancement", "needs-triage"]
+assignees: []
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Gracias por sugerir una nueva funcionalidad. Por favor, completa la información a continuación para ayudarnos a entender mejor tu propuesta.
+
+  - type: textarea
+    id: feature-description
+    attributes:
+      label: 📝 Descripción de la Feature
+      description: Describe claramente la funcionalidad que te gustaría ver
+      placeholder: Ej: Me gustaría poder configurar múltiples contactos de emergencia
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem-statement
+    attributes:
+      label: 🎯 Problema que Resuelve
+      description: ¿Qué problema o necesidad resuelve esta feature?
+      placeholder: Actualmente solo puedo tener un contacto de emergencia, pero necesito más opciones
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposed-solution
+    attributes:
+      label: 💡 Solución Propuesta
+      description: Describe cómo te gustaría que funcione esta feature
+      placeholder: |
+        - Agregar una pantalla de configuración de contactos
+        - Permitir agregar hasta 5 contactos de confianza
+        - Enviar alertas a todos los contactos simultáneamente
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: 🔄 Alternativas Consideradas
+      description: ¿Has considerado otras soluciones?
+      placeholder: También pensé en usar grupos de WhatsApp, pero sería menos seguro
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: ⭐ Prioridad
+      description: ¿Qué tan importante es esta feature para ti?
+      options:
+        - Crítica (necesaria para usar la app)
+        - Alta (muy importante)
+        - Media (sería útil)
+        - Baja (nice to have)
+    validations:
+      required: true
+
+  - type: dropdown
+    id: category
+    attributes:
+      label: 📂 Categoría
+      description: ¿En qué categoría encaja esta feature?
+      options:
+        - Sistema SOS
+        - Módulo Educativo
+        - Ubicación y Mapas
+        - Configuración
+        - Seguridad
+        - UI/UX
+        - Performance
+        - Otra
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: acceptance-criteria
+    attributes:
+      label: ✅ Criterios de Aceptación
+      description: ¿Qué debería cumplir esta feature para considerarse completa?
+      options:
+        - label: La feature debe ser fácil de usar
+          required: false
+        - label: Debe mantener la seguridad de la aplicación
+          required: false
+        - label: Debe funcionar en todas las plataformas
+          required: false
+        - label: Debe incluir tests automatizados
+          required: false
+        - label: Debe tener documentación
+          required: false
+
+  - type: textarea
+    id: mockups
+    attributes:
+      label: 🎨 Mockups o Diseños
+      description: Si tienes ideas de diseño, compártelas aquí
+      placeholder: Arrastra y suelta imágenes de mockups o diseños
+
+  - type: textarea
+    id: technical-considerations
+    attributes:
+      label: 🔧 Consideraciones Técnicas
+      description: ¿Hay algo técnico que deberíamos considerar?
+      placeholder: |
+        - Necesitará permisos adicionales
+        - Requiere integración con contactos del teléfono
+        - Debe funcionar offline
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: 📄 Contexto Adicional
+      description: Cualquier otra información relevante
+      placeholder: Información adicional que pueda ser útil para implementar esta feature...

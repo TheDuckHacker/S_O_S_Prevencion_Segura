@@ -1,0 +1,593 @@
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../providers/sos_provider.dart';
+import '../providers/location_provider.dart';
+import '../utils/app_colors.dart';
+
+class SosScreen extends StatefulWidget {
+  const SosScreen({super.key});
+
+  @override
+  State<SosScreen> createState() => _SosScreenState();
+}
+
+class _SosScreenState extends State<SosScreen> with TickerProviderStateMixin {
+  late AnimationController _sosController;
+  late AnimationController _recordingController;
+  late Animation<double> _sosScaleAnimation;
+  late Animation<double> _recordingRotationAnimation;
+
+  final TextEditingController _threatController = TextEditingController();
+  String _selectedThreatType = 'Me siguen';
+
+  final List<String> _threatTypes = [
+    'Me siguen',
+    'Intento de secuestro',
+    'Acoso',
+    'Situación sospechosa',
+    'Otro',
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+
+    // Controlador para la animación del botón SOS
+    _sosController = AnimationController(
+      duration: const Duration(milliseconds: 500),
+      vsync: this,
+    );
+
+    // Controlador para la animación de grabación
+    _recordingController = AnimationController(
+      duration: const Duration(seconds: 1),
+      vsync: this,
+    );
+
+    _sosScaleAnimation = Tween<double>(
+      begin: 1.0,
+      end: 0.95,
+    ).animate(CurvedAnimation(parent: _sosController, curve: Curves.easeInOut));
+
+    _recordingRotationAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _recordingController, curve: Curves.linear),
+    );
+  }
+
+  @override
+  void dispose() {
+    _sosController.dispose();
+    _recordingController.dispose();
+    _threatController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Container(
+        decoration: const BoxDecoration(gradient: AppColors.mainGradient),
+        child: SafeArea(
+          child: Column(
+            children: [
+              // Header con botón de regreso
+              _buildHeader(),
+
+              // Contenido principal
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    children: [
+                      // Botón SOS principal
+                      _buildMainSosButton(),
+
+                      const SizedBox(height: 30),
+
+                      // Descripción de la amenaza
+                      _buildThreatDescription(),
+
+                      const SizedBox(height: 30),
+
+                      // Botones de acción rápida
+                      _buildQuickActions(),
+
+                      const SizedBox(height: 30),
+
+                      // Estado de la alerta
+                      _buildAlertStatus(),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHeader() {
+    return Padding(
+      padding: const EdgeInsets.all(20.0),
+      child: Row(
+        children: [
+          IconButton(
+            onPressed: () => Navigator.pop(context),
+            icon: const Icon(Icons.arrow_back, color: Colors.white, size: 28),
+          ),
+          const SizedBox(width: 15),
+          Text(
+            'Alerta de Emergencia',
+            style: Theme.of(
+              context,
+            ).textTheme.displayMedium?.copyWith(fontWeight: FontWeight.bold),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMainSosButton() {
+    return Consumer<SosProvider>(
+      builder: (context, sosProvider, child) {
+        bool isSosActive = sosProvider.isSosActive;
+
+        return GestureDetector(
+          onTapDown: (_) => _sosController.forward(),
+          onTapUp: (_) => _sosController.reverse(),
+          onTapCancel: () => _sosController.reverse(),
+          onTap: () => _handleSosActivation(sosProvider),
+          child: AnimatedBuilder(
+            animation: _sosScaleAnimation,
+            builder: (context, child) {
+              return Transform.scale(
+                scale: _sosScaleAnimation.value,
+                child: Container(
+                  width: 250,
+                  height: 250,
+                  decoration: BoxDecoration(
+                    gradient:
+                        isSosActive
+                            ? AppColors.dangerRed
+                                    .withOpacity(0.8)
+                                    .toString()
+                                    .contains('gradient')
+                                ? AppColors.sosGradient
+                                : LinearGradient(
+                                  colors: [
+                                    AppColors.dangerRed,
+                                    AppColors.dangerRed,
+                                  ],
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                )
+                            : AppColors.sosGradient,
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color:
+                            isSosActive
+                                ? AppColors.dangerRed.withOpacity(0.6)
+                                : AppColors.sosRed.withOpacity(0.4),
+                        blurRadius: isSosActive ? 30 : 20,
+                        spreadRadius: isSosActive ? 10 : 5,
+                      ),
+                    ],
+                  ),
+                  child: Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          isSosActive ? Icons.stop : Icons.emergency,
+                          color: Colors.white,
+                          size: 80,
+                        ),
+                        const SizedBox(height: 15),
+                        Text(
+                          isSosActive ? 'DESACTIVAR' : 'ACTIVAR SOS',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        if (isSosActive) ...[
+                          const SizedBox(height: 10),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 15,
+                              vertical: 8,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.2),
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: const Text(
+                              'ALERTA ACTIVA',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildThreatDescription() {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        gradient: AppColors.cardGradient,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.white.withOpacity(0.1), width: 1),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Descripción de la Amenaza',
+            style: Theme.of(
+              context,
+            ).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w600),
+          ),
+          const SizedBox(height: 15),
+
+          // Dropdown para tipo de amenaza
+          DropdownButtonFormField<String>(
+            value: _selectedThreatType,
+            decoration: InputDecoration(
+              labelText: 'Tipo de amenaza',
+              labelStyle: const TextStyle(color: Colors.white70),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(15),
+                borderSide: const BorderSide(color: Colors.white30),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(15),
+                borderSide: const BorderSide(color: Colors.white30),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(15),
+                borderSide: const BorderSide(color: Colors.white),
+              ),
+              filled: true,
+              fillColor: Colors.white.withOpacity(0.1),
+            ),
+            dropdownColor: AppColors.surfaceColor,
+            style: const TextStyle(color: Colors.white),
+            items:
+                _threatTypes.map((String type) {
+                  return DropdownMenuItem<String>(
+                    value: type,
+                    child: Text(type),
+                  );
+                }).toList(),
+            onChanged: (String? newValue) {
+              setState(() {
+                _selectedThreatType = newValue!;
+              });
+            },
+          ),
+
+          const SizedBox(height: 15),
+
+          // Campo de texto para descripción adicional
+          TextField(
+            controller: _threatController,
+            maxLines: 3,
+            decoration: InputDecoration(
+              labelText: 'Descripción adicional (opcional)',
+              labelStyle: const TextStyle(color: Colors.white70),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(15),
+                borderSide: const BorderSide(color: Colors.white30),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(15),
+                borderSide: const BorderSide(color: Colors.white30),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(15),
+                borderSide: const BorderSide(color: Colors.white),
+              ),
+              filled: true,
+              fillColor: Colors.white.withOpacity(0.1),
+            ),
+            style: const TextStyle(color: Colors.white),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildQuickActions() {
+    return Consumer<SosProvider>(
+      builder: (context, sosProvider, child) {
+        bool isSosActive = sosProvider.isSosActive;
+
+        return Row(
+          children: [
+            // Botón de grabación
+            Expanded(
+              child: _buildActionButton(
+                icon:
+                    sosProvider.isRecording
+                        ? Icons.stop
+                        : Icons.fiber_manual_record,
+                label: sosProvider.isRecording ? 'Detener' : 'Grabar',
+                gradient:
+                    sosProvider.isRecording
+                        ? AppColors.dangerRed.toString().contains('gradient')
+                            ? AppColors.safeGradient
+                            : LinearGradient(
+                              colors: [
+                                AppColors.dangerRed,
+                                AppColors.dangerRed,
+                              ],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            )
+                        : AppColors.safeGradient,
+                onTap: () => _handleRecording(sosProvider),
+                isActive: sosProvider.isRecording,
+              ),
+            ),
+
+            const SizedBox(width: 15),
+
+            // Botón de ubicación
+            Expanded(
+              child: _buildActionButton(
+                icon: Icons.location_on,
+                label: 'Ubicación',
+                gradient: AppColors.safeGradient,
+                onTap: () => _showLocationInfo(),
+                isActive: false,
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildActionButton({
+    required IconData icon,
+    required String label,
+    required LinearGradient gradient,
+    required VoidCallback onTap,
+    required bool isActive,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        height: 80,
+        decoration: BoxDecoration(
+          gradient: gradient,
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.2),
+              blurRadius: 10,
+              offset: const Offset(0, 5),
+            ),
+          ],
+        ),
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon, color: Colors.white, size: 28),
+              const SizedBox(height: 5),
+              Text(
+                label,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAlertStatus() {
+    return Consumer<SosProvider>(
+      builder: (context, sosProvider, child) {
+        if (!sosProvider.isSosActive) {
+          return Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              gradient: AppColors.cardGradient,
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(
+                color: Colors.white.withOpacity(0.1),
+                width: 1,
+              ),
+            ),
+            child: Column(
+              children: [
+                Icon(Icons.info_outline, color: Colors.white70, size: 40),
+                const SizedBox(height: 10),
+                Text(
+                  'Alerta SOS inactiva',
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w600),
+                ),
+                const SizedBox(height: 5),
+                Text(
+                  'Toca el botón SOS para activar la alerta de emergencia',
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodyMedium?.copyWith(color: Colors.white70),
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
+          );
+        }
+
+        return Container(
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                AppColors.dangerRed.withOpacity(0.8),
+                AppColors.sosOrange.withOpacity(0.8),
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: Colors.white.withOpacity(0.2), width: 2),
+          ),
+          child: Column(
+            children: [
+              Row(
+                children: [
+                  Icon(Icons.warning, color: Colors.white, size: 30),
+                  const SizedBox(width: 10),
+                  Text(
+                    'ALERTA SOS ACTIVA',
+                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 15),
+              Text(
+                'Ubicación: ${sosProvider.currentLocation}',
+                style: Theme.of(
+                  context,
+                ).textTheme.bodyMedium?.copyWith(color: Colors.white),
+              ),
+              const SizedBox(height: 10),
+              Text(
+                'Descripción: ${sosProvider.threatDescription}',
+                style: Theme.of(
+                  context,
+                ).textTheme.bodyMedium?.copyWith(color: Colors.white),
+              ),
+              const SizedBox(height: 15),
+              Text(
+                'La alerta ha sido enviada a tus contactos de confianza',
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: Colors.white70,
+                  fontStyle: FontStyle.italic,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  void _handleSosActivation(SosProvider sosProvider) {
+    if (sosProvider.isSosActive) {
+      // Desactivar SOS
+      sosProvider.deactivateSos();
+      _showMessage('Alerta SOS desactivada');
+    } else {
+      // Activar SOS
+      String description =
+          _threatController.text.isNotEmpty
+              ? '$_selectedThreatType: ${_threatController.text}'
+              : _selectedThreatType;
+
+      sosProvider.activateSos(description);
+      _showMessage('Alerta SOS activada');
+    }
+  }
+
+  void _handleRecording(SosProvider sosProvider) {
+    if (sosProvider.isRecording) {
+      sosProvider.stopRecording();
+      _recordingController.stop();
+      _showMessage('Grabación detenida');
+    } else {
+      sosProvider.startRecording();
+      _recordingController.repeat();
+      _showMessage('Grabación iniciada');
+    }
+  }
+
+  void _showLocationInfo() {
+    showDialog(
+      context: context,
+      builder:
+          (context) => AlertDialog(
+            backgroundColor: AppColors.cardBackground,
+            title: const Text(
+              'Información de Ubicación',
+              style: TextStyle(color: Colors.white),
+            ),
+            content: Consumer<LocationProvider>(
+              builder: (context, locationProvider, child) {
+                return Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Estado: ${locationProvider.locationStatus}',
+                      style: const TextStyle(color: Colors.white70),
+                    ),
+                    const SizedBox(height: 10),
+                    if (locationProvider.currentPosition != null) ...[
+                      Text(
+                        'Latitud: ${locationProvider.currentPosition!.latitude.toStringAsFixed(6)}',
+                        style: const TextStyle(color: Colors.white70),
+                      ),
+                      Text(
+                        'Longitud: ${locationProvider.currentPosition!.longitude.toStringAsFixed(6)}',
+                        style: const TextStyle(color: Colors.white70),
+                      ),
+                    ],
+                  ],
+                );
+              },
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text(
+                  'Cerrar',
+                  style: TextStyle(color: AppColors.lightBlue),
+                ),
+              ),
+            ],
+          ),
+    );
+  }
+
+  void _showMessage(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: AppColors.primaryBlue,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      ),
+    );
+  }
+}

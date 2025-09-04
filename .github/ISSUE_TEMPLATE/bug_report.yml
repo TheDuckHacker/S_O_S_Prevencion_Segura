@@ -1,0 +1,128 @@
+name: 🐛 Reportar Bug
+description: Reporta un bug o problema en la aplicación
+title: "[Bug]: "
+labels: ["bug", "needs-triage"]
+assignees: []
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Gracias por reportar este bug. Por favor, completa la información a continuación para ayudarnos a resolver el problema.
+
+  - type: textarea
+    id: bug-description
+    attributes:
+      label: 📝 Descripción del Bug
+      description: Describe claramente qué está pasando
+      placeholder: Ej: La aplicación se cierra cuando presiono el botón SOS
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps-to-reproduce
+    attributes:
+      label: 🔄 Pasos para Reproducir
+      description: Lista los pasos para reproducir el comportamiento
+      placeholder: |
+        1. Ir a la pantalla principal
+        2. Presionar el botón SOS
+        3. Ver el error
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected-behavior
+    attributes:
+      label: ✅ Comportamiento Esperado
+      description: Qué esperabas que pasara
+      placeholder: El botón SOS debería activar la alerta de emergencia
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual-behavior
+    attributes:
+      label: ❌ Comportamiento Actual
+      description: Qué está pasando realmente
+      placeholder: La aplicación se cierra inmediatamente
+    validations:
+      required: true
+
+  - type: dropdown
+    id: severity
+    attributes:
+      label: 🚨 Severidad
+      description: ¿Qué tan crítico es este bug?
+      options:
+        - Crítico (aplicación no funciona)
+        - Alto (funcionalidad principal afectada)
+        - Medio (funcionalidad secundaria afectada)
+        - Bajo (problema menor)
+    validations:
+      required: true
+
+  - type: dropdown
+    id: platform
+    attributes:
+      label: 📱 Plataforma
+      description: En qué plataforma ocurre el problema
+      options:
+        - Android
+        - iOS
+        - Web
+        - Windows
+        - macOS
+        - Linux
+        - Todas
+    validations:
+      required: true
+
+  - type: input
+    id: flutter-version
+    attributes:
+      label: 🔧 Versión de Flutter
+      description: Versión de Flutter que estás usando
+      placeholder: ej: 3.16.0
+    validations:
+      required: true
+
+  - type: input
+    id: dart-version
+    attributes:
+      label: 🎯 Versión de Dart
+      description: Versión de Dart que estás usando
+      placeholder: ej: 3.2.0
+    validations:
+      required: true
+
+  - type: input
+    id: device-info
+    attributes:
+      label: 📱 Información del Dispositivo
+      description: Modelo y versión del SO
+      placeholder: ej: Samsung Galaxy S21, Android 12
+
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: 📸 Screenshots
+      description: Si aplica, agrega capturas de pantalla
+      placeholder: Arrastra y suelta las imágenes aquí
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: 📋 Logs de Error
+      description: Si hay logs de error, pégalos aquí
+      render: shell
+      placeholder: |
+        flutter: Error: Exception: Unable to locate asset entry
+        at main.dart:25
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: 📄 Contexto Adicional
+      description: Cualquier otra información relevante
+      placeholder: Información adicional que pueda ser útil...
