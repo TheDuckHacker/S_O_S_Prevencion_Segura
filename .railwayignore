@@ -1,0 +1,19 @@
+# Ignorar archivos de Flutter para Railway
+lib/
+android/
+ios/
+linux/
+macos/
+windows/
+web/
+test/
+assets/
+pubspec.yaml
+pubspec.lock
+analysis_options.yaml
+*.dart
+*.iml
+build/
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
