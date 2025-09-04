@@ -157,6 +157,9 @@ class SosProvider extends ChangeNotifier {
       // Detener compartir ubicación en tiempo real
       await RealtimeWhatsAppService.stopRealtimeLocationSharing();
 
+      // Liberar recursos de la cámara
+      await RecordingService.dispose();
+
       notifyListeners();
     } catch (e) {
       debugPrint('Error desactivando SOS: $e');
@@ -166,6 +169,12 @@ class SosProvider extends ChangeNotifier {
   // Iniciar grabación
   Future<void> startRecording() async {
     try {
+      // Solo permitir grabación si SOS está activo
+      if (!_isSosActive) {
+        debugPrint('No se puede grabar sin activar SOS primero');
+        return;
+      }
+      
       _isRecording = true;
 
       // Mostrar notificación de grabación

@@ -8,7 +8,7 @@ class RecordingService {
   static bool _isRecordingVideo = false;
   static List<String> _evidenceFiles = [];
 
-  // Inicializar cámara
+  // Inicializar cámara solo cuando sea necesario
   static Future<void> initializeCamera() async {
     try {
       final cameras = await availableCameras();

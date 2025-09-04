@@ -365,10 +365,14 @@ class _SosScreenState extends State<SosScreen> with TickerProviderStateMixin {
                         sosProvider.isRecording
                             ? Icons.stop
                             : Icons.fiber_manual_record,
-                    label: sosProvider.isRecording ? 'Detener' : 'Grabar',
+                    label: sosProvider.isRecording 
+                        ? 'Detener' 
+                        : (sosProvider.isSosActive ? 'Grabar' : 'Activa SOS'),
                     gradient:
                         sosProvider.isRecording
-                            ? AppColors.dangerRed.toString().contains('gradient')
+                            ? AppColors.dangerRed.toString().contains(
+                                  'gradient',
+                                )
                                 ? AppColors.safeGradient
                                 : LinearGradient(
                                   colors: [
@@ -378,8 +382,16 @@ class _SosScreenState extends State<SosScreen> with TickerProviderStateMixin {
                                   begin: Alignment.topLeft,
                                   end: Alignment.bottomRight,
                                 )
-                            : AppColors.safeGradient,
-                    onTap: () => _handleRecording(sosProvider),
+                            : (sosProvider.isSosActive 
+                                ? AppColors.safeGradient 
+                                : LinearGradient(
+                                    colors: [Colors.grey, Colors.grey.shade600],
+                                    begin: Alignment.topLeft,
+                                    end: Alignment.bottomRight,
+                                  )),
+                    onTap: sosProvider.isSosActive 
+                        ? () => _handleRecording(sosProvider)
+                        : () => _showMessage('Primero activa la alerta SOS'),
                     isActive: sosProvider.isRecording,
                   ),
                 ),
@@ -676,17 +688,25 @@ class _SosScreenState extends State<SosScreen> with TickerProviderStateMixin {
       _recordingController.stop();
       _showMessage('Grabación detenida');
     } else {
+      // Solo permitir grabación si SOS está activo
+      if (!sosProvider.isSosActive) {
+        _showMessage('Primero activa la alerta SOS para poder grabar');
+        return;
+      }
+
       // Verificar si la cámara está disponible antes de iniciar
       if (!RecordingService.isCameraAvailable()) {
-        _showMessage('Cámara no disponible. Intentando inicializar...');
+        _showMessage('Inicializando cámara...');
         await RecordingService.initializeCamera();
-        
+
         if (!RecordingService.isCameraAvailable()) {
-          _showMessage('❌ No se pudo acceder a la cámara. Verifica los permisos.');
+          _showMessage(
+            '❌ No se pudo acceder a la cámara. Verifica los permisos.',
+          );
           return;
         }
       }
-      
+
       sosProvider.startRecording();
       _recordingController.repeat();
       _showMessage('Grabación iniciada');
