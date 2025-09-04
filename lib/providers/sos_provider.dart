@@ -182,13 +182,15 @@ class SosProvider extends ChangeNotifier {
     }
   }
 
-  // Obtener ubicación actual
+  // Obtener ubicación actual con máxima precisión
   Future<String> _getCurrentLocation() async {
     try {
       final position = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high,
+        desiredAccuracy: LocationAccuracy.bestForNavigation, // Máxima precisión
+        timeLimit: const Duration(seconds: 30),
+        forceAndroidLocationManager: false,
       );
-      return '${position.latitude}, ${position.longitude}';
+      return '${position.latitude}, ${position.longitude} (Precisión: ${position.accuracy.toStringAsFixed(1)}m)';
     } catch (e) {
       debugPrint('Error obteniendo ubicación: $e');
       return 'Ubicación no disponible';

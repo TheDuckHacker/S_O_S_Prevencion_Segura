@@ -92,6 +92,40 @@ class LocationProvider extends ChangeNotifier {
     await _getCurrentLocation();
   }
 
+  // Obtener ubicación con precisión extrema para emergencias
+  Future<Position?> getEmergencyLocation() async {
+    try {
+      if (!_hasLocationPermission) {
+        _locationStatus = 'Sin permisos de ubicación';
+        return null;
+      }
+
+      _locationStatus = 'Obteniendo ubicación de emergencia...';
+      notifyListeners();
+
+      // Configuración para máxima precisión en emergencias
+      final position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.bestForNavigation,
+        timeLimit: const Duration(seconds: 60), // Más tiempo para emergencias
+        forceAndroidLocationManager: false,
+      );
+
+      _currentPosition = position;
+      _locationHistory.add(position);
+
+      _locationStatus =
+          'Ubicación de emergencia obtenida (${position.accuracy.toStringAsFixed(1)}m de precisión)';
+      notifyListeners();
+
+      return position;
+    } catch (e) {
+      _locationStatus = 'Error obteniendo ubicación de emergencia: $e';
+      debugPrint('Error obteniendo ubicación de emergencia: $e');
+      notifyListeners();
+      return null;
+    }
+  }
+
   // Obtener ubicación actual (método privado)
   Future<void> _getCurrentLocation() async {
     try {
@@ -104,8 +138,11 @@ class LocationProvider extends ChangeNotifier {
       notifyListeners();
 
       Position position = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high,
-        timeLimit: const Duration(seconds: 10),
+        desiredAccuracy: LocationAccuracy.bestForNavigation, // Máxima precisión
+        timeLimit: const Duration(
+          seconds: 30,
+        ), // Más tiempo para mejor precisión
+        forceAndroidLocationManager: false, // Usar GPS en lugar de red
       );
 
       _currentPosition = position;
@@ -116,7 +153,8 @@ class LocationProvider extends ChangeNotifier {
         _locationHistory.removeAt(0);
       }
 
-      _locationStatus = 'Ubicación obtenida exitosamente';
+      _locationStatus =
+          'Ubicación precisa obtenida (${position.accuracy.toStringAsFixed(1)}m de precisión)';
       notifyListeners();
     } catch (e) {
       _locationStatus = 'Error obteniendo ubicación: $e';
