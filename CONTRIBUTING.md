@@ -67,8 +67,8 @@ Este proyecto sigue un código de conducta para asegurar un ambiente colaborativ
 
 1. **Fork y Clonar**
 ```bash
-git clone https://github.com/tu-usuario/prevencion-segura.git
-cd prevencion-segura
+git clone https://github.com/TheDuckHacker/S_O_S_Prevencion_Segura.git
+cd S_O_S_Prevencion_Segura
 ```
 
 2. **Instalar Dependencias**

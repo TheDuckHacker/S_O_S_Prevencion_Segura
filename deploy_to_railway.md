@@ -11,8 +11,10 @@
 3. Conecta tu repositorio de GitHub
 
 ## Paso 3: Configurar
-1. Selecciona la carpeta `server/`
-2. Railway detectará automáticamente que es Node.js
+1. Railway detectará automáticamente que es Node.js (archivos en raíz)
+2. Si no detecta, configura manualmente:
+   - Build Command: `npm install`
+   - Start Command: `npm start`
 3. Haz clic en "Deploy"
 
 ## Paso 4: Obtener URL
