@@ -1,7 +1,7 @@
 {
     "logs": [
         {
-            "outputFile": "com.example.mi_app-mergeReleaseResources-42:/values-gl/values-gl.xml",
+            "outputFile": "com.example.mi_app-mergeReleaseResources-43:/values-gl/values-gl.xml",
             "map": [
                 {
                     "source": "C:\\Users\\Legion\\.gradle\\caches\\8.10.2\\transforms\\0098a6e93522fecc805d8900172003dc\\transformed\\preference-1.2.1\\res\\values-gl\\values-gl.xml",

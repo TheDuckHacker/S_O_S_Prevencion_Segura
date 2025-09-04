@@ -1,7 +1,7 @@
 {
     "logs": [
         {
-            "outputFile": "com.example.mi_app-mergeReleaseResources-42:/values-te/values-te.xml",
+            "outputFile": "com.example.mi_app-mergeReleaseResources-43:/values-te/values-te.xml",
             "map": [
                 {
                     "source": "C:\\Users\\Legion\\.gradle\\caches\\8.10.2\\transforms\\9db9b81a577112600e8d2ee7b5450923\\transformed\\jetified-play-services-base-18.3.0\\res\\values-te\\values.xml",

@@ -58,22 +58,25 @@ dependencies:
   
   # WhatsApp y comunicación
   whatsapp_unilink: ^2.1.0
-  telephony: ^0.2.0
+  # telephony: ^0.2.0  # Removido por problemas de namespace
   
   # Notificaciones
   flutter_local_notifications: ^17.2.3
   
   # Grabación de audio
-  record: ^5.1.2
+  # record: ^5.1.2  # Removido por problemas de compatibilidad
   
   # Servicios en segundo plano
-  workmanager: ^0.5.2
+  # workmanager: ^0.5.2  # Removido por problemas de compatibilidad
   
   # HTTP para envío de datos
   http: ^1.2.2
   
   # Encriptación
   crypto: ^3.0.5
+  
+  # Maps
+  google_maps_flutter: ^2.6.1
 
 dev_dependencies:
   flutter_test:

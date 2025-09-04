@@ -308,6 +308,38 @@ class _SosScreenState extends State<SosScreen> with TickerProviderStateMixin {
             ),
             style: const TextStyle(color: Colors.white),
           ),
+          
+          // Botón para actualizar descripción cuando SOS esté activo
+          Consumer<SosProvider>(
+            builder: (context, sosProvider, child) {
+              if (sosProvider.isSosActive && _threatController.text.isNotEmpty) {
+                return Padding(
+                  padding: const EdgeInsets.only(top: 10),
+                  child: SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () => _updateDescription(sosProvider),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.lightBlue,
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(15),
+                        ),
+                      ),
+                      child: const Text(
+                        'Actualizar Descripción',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                );
+              }
+              return const SizedBox.shrink();
+            },
+          ),
         ],
       ),
     );
@@ -496,6 +528,74 @@ class _SosScreenState extends State<SosScreen> with TickerProviderStateMixin {
                 ),
                 textAlign: TextAlign.center,
               ),
+              const SizedBox(height: 15),
+              // Botones de acción
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  // Botón para compartir ubicación manualmente
+                  GestureDetector(
+                    onTap: () => _shareLocationManually(sosProvider),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 15,
+                        vertical: 10,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(25),
+                        border: Border.all(color: Colors.white.withOpacity(0.3)),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.share_location, color: Colors.white, size: 18),
+                          const SizedBox(width: 6),
+                          Text(
+                            'Compartir',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w600,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  
+                  // Botón para abrir permisos de ubicación
+                  GestureDetector(
+                    onTap: () => _openLocationPermissions(),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 15,
+                        vertical: 10,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(25),
+                        border: Border.all(color: Colors.white.withOpacity(0.3)),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.location_on, color: Colors.white, size: 18),
+                          const SizedBox(width: 6),
+                          Text(
+                            'Permisos',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w600,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ],
           ),
         );
@@ -578,6 +678,35 @@ class _SosScreenState extends State<SosScreen> with TickerProviderStateMixin {
             ],
           ),
     );
+  }
+
+  void _shareLocationManually(SosProvider sosProvider) async {
+    try {
+      await sosProvider.shareLocationViaWhatsApp();
+      _showMessage('Ubicación compartida por WhatsApp');
+    } catch (e) {
+      _showMessage('Error compartiendo ubicación: $e');
+    }
+  }
+
+  void _openLocationPermissions() async {
+    try {
+      final locationProvider = Provider.of<LocationProvider>(context, listen: false);
+      await locationProvider.requestLocationPermission();
+      _showMessage('Permisos de ubicación solicitados');
+    } catch (e) {
+      _showMessage('Error solicitando permisos: $e');
+    }
+  }
+
+  void _updateDescription(SosProvider sosProvider) {
+    if (_threatController.text.isNotEmpty) {
+      final newDescription = '$_selectedThreatType: ${_threatController.text}';
+      sosProvider.updateThreatDescription(newDescription);
+      _showMessage('Descripción actualizada');
+    } else {
+      _showMessage('Por favor escribe una descripción');
+    }
   }
 
   void _showMessage(String message) {

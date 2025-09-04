@@ -1,0 +1,6 @@
+C:\Users\Legion\AppData\Local\Pub\Cache\hosted\pub.dev\workmanager-0.5.2\android\src\main\kotlin\dev\fluttercommunity\workmanager\DebugHelper.kt
+C:\Users\Legion\AppData\Local\Pub\Cache\hosted\pub.dev\workmanager-0.5.2\android\src\main\kotlin\dev\fluttercommunity\workmanager\BackgroundWorker.kt
+C:\Users\Legion\AppData\Local\Pub\Cache\hosted\pub.dev\workmanager-0.5.2\android\src\main\kotlin\dev\fluttercommunity\workmanager\Extractor.kt
+C:\Users\Legion\AppData\Local\Pub\Cache\hosted\pub.dev\workmanager-0.5.2\android\src\main\kotlin\dev\fluttercommunity\workmanager\WorkmanagerCallHandler.kt
+C:\Users\Legion\AppData\Local\Pub\Cache\hosted\pub.dev\workmanager-0.5.2\android\src\main\kotlin\dev\fluttercommunity\workmanager\WorkmanagerPlugin.kt
+C:\Users\Legion\AppData\Local\Pub\Cache\hosted\pub.dev\workmanager-0.5.2\android\src\main\kotlin\dev\fluttercommunity\workmanager\SharedPreferenceHelper.kt

@@ -22,6 +22,44 @@ class SosProvider extends ChangeNotifier {
   List<String> get evidenceFiles => _evidenceFiles;
   List<Map<String, dynamic>> get sosHistory => _sosHistory;
 
+  // Actualizar descripción de amenaza
+  void updateThreatDescription(String newDescription) {
+    _threatDescription = newDescription;
+    
+    // Actualizar el último registro en el historial si hay uno activo
+    if (_sosHistory.isNotEmpty && _sosHistory.last['status'] == 'active') {
+      _sosHistory.last['description'] = newDescription;
+    }
+    
+    notifyListeners();
+  }
+
+  // Compartir ubicación en tiempo real por WhatsApp
+  Future<void> shareLocationViaWhatsApp() async {
+    try {
+      if (_currentLocation.isEmpty) {
+        _currentLocation = await _getCurrentLocation();
+      }
+
+      await WhatsAppService.shareLocationToAllContacts(
+        location: _currentLocation,
+        message: 'Compartiendo mi ubicación actual por seguridad',
+      );
+
+      // Agregar al historial
+      _sosHistory.add({
+        'timestamp': DateTime.now().toIso8601String(),
+        'description': 'Ubicación compartida manualmente',
+        'location': _currentLocation,
+        'status': 'location_shared',
+      });
+
+      notifyListeners();
+    } catch (e) {
+      debugPrint('Error compartiendo ubicación: $e');
+    }
+  }
+
   // Activar SOS
   Future<void> activateSos(String description) async {
     try {
@@ -88,7 +126,7 @@ class SosProvider extends ChangeNotifier {
       await NotificationService.showRecordingStarted();
 
       // Iniciar grabación de audio
-      await RecordingService.startAudioRecording();
+      await RecordingService.startVideoRecording();
 
       notifyListeners();
     } catch (e) {
@@ -101,17 +139,24 @@ class SosProvider extends ChangeNotifier {
     try {
       _isRecording = false;
 
-      // Detener grabación de audio
-      final audioPath = await RecordingService.stopAudioRecording();
-      if (audioPath != null) {
-        _evidenceFiles.add(audioPath);
+      // Detener grabación de video
+      final videoPath = await RecordingService.stopVideoRecording();
+      if (videoPath != null) {
+        _evidenceFiles.add(videoPath);
 
         // Enviar archivo de evidencia al servidor
         await RealtimeService.sendEvidenceFile(
           userId: 'user_${DateTime.now().millisecondsSinceEpoch}',
-          filePath: audioPath,
-          fileType: 'audio',
+          filePath: videoPath,
+          fileType: 'video',
           timestamp: DateTime.now().toIso8601String(),
+        );
+
+        // Enviar grabación por WhatsApp a contactos de emergencia
+        await WhatsAppService.sendRecordingToAllContacts(
+          filePath: videoPath,
+          message: _threatDescription,
+          location: _currentLocation,
         );
       }
 

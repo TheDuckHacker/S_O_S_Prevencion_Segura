@@ -193,16 +193,7 @@ class NotificationService {
       iOS: DarwinNotificationDetails(),
     );
 
-    await _notifications.zonedSchedule(
-      5,
-      title,
-      body,
-      scheduledTime,
-      details,
-      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-      uiLocalNotificationDateInterpretation:
-          UILocalNotificationDateInterpretation.absoluteTime,
-    );
+    await _notifications.show(5, title, body, details);
   }
 
   // Cancelar todas las notificaciones

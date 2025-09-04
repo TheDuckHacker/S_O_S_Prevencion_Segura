@@ -86,6 +86,12 @@
       "languageVersion": "3.4"
     },
     {
+      "name": "csslib",
+      "rootUri": "file:///C:/Users/Legion/AppData/Local/Pub/Cache/hosted/pub.dev/csslib-1.0.2",
+      "packageUri": "lib/",
+      "languageVersion": "3.1"
+    },
+    {
       "name": "cupertino_icons",
       "rootUri": "file:///C:/Users/Legion/AppData/Local/Pub/Cache/hosted/pub.dev/cupertino_icons-1.0.8",
       "packageUri": "lib/",
@@ -210,6 +216,48 @@
       "rootUri": "file:///C:/Users/Legion/AppData/Local/Pub/Cache/hosted/pub.dev/geolocator_windows-0.2.5",
       "packageUri": "lib/",
       "languageVersion": "3.5"
+    },
+    {
+      "name": "google_maps",
+      "rootUri": "file:///C:/Users/Legion/AppData/Local/Pub/Cache/hosted/pub.dev/google_maps-8.1.1",
+      "packageUri": "lib/",
+      "languageVersion": "3.4"
+    },
+    {
+      "name": "google_maps_flutter",
+      "rootUri": "file:///C:/Users/Legion/AppData/Local/Pub/Cache/hosted/pub.dev/google_maps_flutter-2.13.1",
+      "packageUri": "lib/",
+      "languageVersion": "3.7"
+    },
+    {
+      "name": "google_maps_flutter_android",
+      "rootUri": "file:///C:/Users/Legion/AppData/Local/Pub/Cache/hosted/pub.dev/google_maps_flutter_android-2.18.2",
+      "packageUri": "lib/",
+      "languageVersion": "3.7"
+    },
+    {
+      "name": "google_maps_flutter_ios",
+      "rootUri": "file:///C:/Users/Legion/AppData/Local/Pub/Cache/hosted/pub.dev/google_maps_flutter_ios-2.15.5",
+      "packageUri": "lib/",
+      "languageVersion": "3.6"
+    },
+    {
+      "name": "google_maps_flutter_platform_interface",
+      "rootUri": "file:///C:/Users/Legion/AppData/Local/Pub/Cache/hosted/pub.dev/google_maps_flutter_platform_interface-2.14.0",
+      "packageUri": "lib/",
+      "languageVersion": "3.7"
+    },
+    {
+      "name": "google_maps_flutter_web",
+      "rootUri": "file:///C:/Users/Legion/AppData/Local/Pub/Cache/hosted/pub.dev/google_maps_flutter_web-0.5.14+2",
+      "packageUri": "lib/",
+      "languageVersion": "3.7"
+    },
+    {
+      "name": "html",
+      "rootUri": "file:///C:/Users/Legion/AppData/Local/Pub/Cache/hosted/pub.dev/html-0.15.6",
+      "packageUri": "lib/",
+      "languageVersion": "3.2"
     },
     {
       "name": "http",
@@ -392,46 +440,10 @@
       "languageVersion": "2.12"
     },
     {
-      "name": "record",
-      "rootUri": "file:///C:/Users/Legion/AppData/Local/Pub/Cache/hosted/pub.dev/record-5.2.1",
+      "name": "sanitize_html",
+      "rootUri": "file:///C:/Users/Legion/AppData/Local/Pub/Cache/hosted/pub.dev/sanitize_html-2.1.0",
       "packageUri": "lib/",
-      "languageVersion": "3.4"
-    },
-    {
-      "name": "record_android",
-      "rootUri": "file:///C:/Users/Legion/AppData/Local/Pub/Cache/hosted/pub.dev/record_android-1.4.1",
-      "packageUri": "lib/",
-      "languageVersion": "3.5"
-    },
-    {
-      "name": "record_darwin",
-      "rootUri": "file:///C:/Users/Legion/AppData/Local/Pub/Cache/hosted/pub.dev/record_darwin-1.2.2",
-      "packageUri": "lib/",
-      "languageVersion": "3.3"
-    },
-    {
-      "name": "record_linux",
-      "rootUri": "file:///C:/Users/Legion/AppData/Local/Pub/Cache/hosted/pub.dev/record_linux-0.7.2",
-      "packageUri": "lib/",
-      "languageVersion": "3.3"
-    },
-    {
-      "name": "record_platform_interface",
-      "rootUri": "file:///C:/Users/Legion/AppData/Local/Pub/Cache/hosted/pub.dev/record_platform_interface-1.4.0",
-      "packageUri": "lib/",
-      "languageVersion": "3.5"
-    },
-    {
-      "name": "record_web",
-      "rootUri": "file:///C:/Users/Legion/AppData/Local/Pub/Cache/hosted/pub.dev/record_web-1.2.0",
-      "packageUri": "lib/",
-      "languageVersion": "3.5"
-    },
-    {
-      "name": "record_windows",
-      "rootUri": "file:///C:/Users/Legion/AppData/Local/Pub/Cache/hosted/pub.dev/record_windows-1.0.7",
-      "packageUri": "lib/",
-      "languageVersion": "3.5"
+      "languageVersion": "2.12"
     },
     {
       "name": "shared_preferences",
@@ -516,12 +528,6 @@
       "rootUri": "file:///C:/Users/Legion/AppData/Local/Pub/Cache/hosted/pub.dev/string_scanner-1.4.1",
       "packageUri": "lib/",
       "languageVersion": "3.1"
-    },
-    {
-      "name": "telephony",
-      "rootUri": "file:///C:/Users/Legion/AppData/Local/Pub/Cache/hosted/pub.dev/telephony-0.2.0",
-      "packageUri": "lib/",
-      "languageVersion": "2.15"
     },
     {
       "name": "term_glyph",
@@ -644,12 +650,6 @@
       "languageVersion": "2.12"
     },
     {
-      "name": "workmanager",
-      "rootUri": "file:///C:/Users/Legion/AppData/Local/Pub/Cache/hosted/pub.dev/workmanager-0.5.2",
-      "packageUri": "lib/",
-      "languageVersion": "3.1"
-    },
-    {
       "name": "xdg_directories",
       "rootUri": "file:///C:/Users/Legion/AppData/Local/Pub/Cache/hosted/pub.dev/xdg_directories-1.1.0",
       "packageUri": "lib/",
@@ -668,7 +668,7 @@
       "languageVersion": "3.7"
     }
   ],
-  "generated": "2025-09-04T15:35:14.481571Z",
+  "generated": "2025-09-04T18:28:47.166495Z",
   "generator": "pub",
   "generatorVersion": "3.7.2",
   "flutterRoot": "file:///C:/dev/flutter",

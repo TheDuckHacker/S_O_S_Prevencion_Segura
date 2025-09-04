@@ -20,6 +20,10 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     
+    <!-- Permisos para Google Maps -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    
     <!-- Permisos de notificaciones -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     
@@ -27,6 +31,11 @@
         android:label="Prevención Segura"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
+        
+        <!-- Google Maps API Key -->
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="AIzaSyBvOkBwJhXjK9mF8nL2pQrS3tU4vW5xY6z"/>
         <activity
             android:name=".MainActivity"
             android:exported="true"

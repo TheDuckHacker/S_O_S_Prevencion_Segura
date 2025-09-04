@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../providers/location_provider.dart';
 import '../providers/sos_provider.dart';
 import '../utils/app_colors.dart';
@@ -17,7 +18,10 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
   late Animation<double> _fadeAnimation;
   late Animation<double> _pulseAnimation;
 
+  GoogleMapController? _mapController;
+  Set<Marker> _markers = {};
   bool _isSharingLocation = false;
+  LatLng? _currentPosition;
 
   @override
   void initState() {
@@ -44,57 +48,80 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
 
     _fadeController.forward();
     _pulseController.repeat(reverse: true);
+    
+    // Obtener ubicación inicial
+    _getCurrentLocation();
   }
 
   @override
   void dispose() {
     _fadeController.dispose();
     _pulseController.dispose();
+    _mapController?.dispose();
     super.dispose();
+  }
+
+  Future<void> _getCurrentLocation() async {
+    final locationProvider = Provider.of<LocationProvider>(context, listen: false);
+    await locationProvider.getCurrentLocation();
+    
+    if (locationProvider.currentPosition != null) {
+      setState(() {
+        _currentPosition = LatLng(
+          locationProvider.currentPosition!.latitude,
+          locationProvider.currentPosition!.longitude,
+        );
+        _updateMarkers();
+      });
+    }
+  }
+
+  void _updateMarkers() {
+    if (_currentPosition != null) {
+      setState(() {
+        _markers = {
+          Marker(
+            markerId: const MarkerId('current_location'),
+            position: _currentPosition!,
+            infoWindow: const InfoWindow(
+              title: 'Tu Ubicación',
+              snippet: 'Ubicación actual',
+            ),
+            icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue),
+          ),
+        };
+      });
+    }
+  }
+
+  void _onMapCreated(GoogleMapController controller) {
+    _mapController = controller;
+    if (_currentPosition != null) {
+      controller.animateCamera(
+        CameraUpdate.newLatLngZoom(_currentPosition!, 15.0),
+      );
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
-        decoration: const BoxDecoration(gradient: AppColors.mainGradient),
+        decoration: BoxDecoration(
+          gradient: AppColors.backgroundGradient,
+        ),
         child: SafeArea(
-          child: Column(
-            children: [
-              // Header con botón de regreso
-              _buildHeader(),
-
-              // Contenido principal
-              Expanded(
-                child: FadeTransition(
-                  opacity: _fadeAnimation,
-                  child: SingleChildScrollView(
-                    padding: const EdgeInsets.all(20),
-                    child: Column(
-                      children: [
-                        // Mapa simulado
-                        _buildMapSection(),
-
-                        const SizedBox(height: 30),
-
-                        // Información de ubicación
-                        _buildLocationInfo(),
-
-                        const SizedBox(height: 30),
-
-                        // Acciones de ubicación
-                        _buildLocationActions(),
-
-                        const SizedBox(height: 30),
-
-                        // Estadísticas de ubicación
-                        _buildLocationStats(),
-                      ],
-                    ),
-                  ),
+          child: FadeTransition(
+            opacity: _fadeAnimation,
+            child: Column(
+              children: [
+                _buildHeader(),
+                Expanded(
+                  child: _buildMapContent(),
                 ),
-              ),
-            ],
+                _buildLocationControls(),
+              ],
+            ),
           ),
         ),
       ),
@@ -112,131 +139,257 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
           ),
           const SizedBox(width: 15),
           Text(
-            'Mapa y Ubicación',
-            style: Theme.of(
-              context,
-            ).textTheme.displayMedium?.copyWith(fontWeight: FontWeight.bold),
+            'Mapa en Tiempo Real',
+            style: Theme.of(context).textTheme.displayMedium?.copyWith(
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildMapSection() {
+  Widget _buildMapContent() {
     return Container(
-      height: 300,
+      margin: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: Colors.white.withOpacity(0.2),
+          width: 2,
+        ),
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(18),
+        child: _currentPosition != null
+            ? GoogleMap(
+                onMapCreated: _onMapCreated,
+                initialCameraPosition: CameraPosition(
+                  target: _currentPosition!,
+                  zoom: 15.0,
+                ),
+                markers: _markers,
+                myLocationEnabled: true,
+                myLocationButtonEnabled: true,
+                mapType: MapType.normal,
+                zoomControlsEnabled: true,
+                compassEnabled: true,
+                onTap: (LatLng position) {
+                  setState(() {
+                    _currentPosition = position;
+                    _updateMarkers();
+                  });
+                },
+              )
+            : _buildLoadingMap(),
+      ),
+    );
+  }
+
+  Widget _buildLoadingMap() {
+    return Container(
       decoration: BoxDecoration(
         gradient: AppColors.cardGradient,
-        borderRadius: BorderRadius.circular(25),
-        border: Border.all(color: Colors.white.withOpacity(0.1), width: 1),
+        borderRadius: BorderRadius.circular(18),
       ),
-      child: Stack(
-        children: [
-          // Mapa simulado
-          Container(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(25),
-              color: AppColors.surfaceColor,
-            ),
-            child: Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.map, color: Colors.white70, size: 60),
-                  const SizedBox(height: 15),
-                  Text(
-                    'Mapa en Tiempo Real',
-                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white70,
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  Text(
-                    'Aquí se mostraría el mapa real',
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: Colors.white.withOpacity(0.5),
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                ],
-              ),
-            ),
-          ),
-
-          // Indicador de ubicación actual
-          Positioned(
-            top: 20,
-            right: 20,
-            child: AnimatedBuilder(
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            AnimatedBuilder(
               animation: _pulseAnimation,
               builder: (context, child) {
                 return Transform.scale(
                   scale: _pulseAnimation.value,
                   child: Container(
-                    padding: const EdgeInsets.all(10),
+                    width: 80,
+                    height: 80,
                     decoration: BoxDecoration(
-                      color: AppColors.lightGreen.withOpacity(0.9),
+                      color: AppColors.lightBlue.withOpacity(0.3),
                       shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(
-                          color: AppColors.lightGreen.withOpacity(0.3),
-                          blurRadius: 10,
-                          spreadRadius: 2,
-                        ),
-                      ],
+                      border: Border.all(
+                        color: AppColors.lightBlue,
+                        width: 3,
+                      ),
                     ),
                     child: const Icon(
-                      Icons.my_location,
-                      color: Colors.white,
-                      size: 20,
+                      Icons.location_on,
+                      color: AppColors.lightBlue,
+                      size: 40,
                     ),
                   ),
                 );
               },
             ),
-          ),
+            const SizedBox(height: 20),
+            const Text(
+              'Obteniendo ubicación...',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 10),
+            const Text(
+              'Por favor, permite el acceso a la ubicación',
+              style: TextStyle(
+                color: Colors.white70,
+                fontSize: 14,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: _getCurrentLocation,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.lightBlue,
+                padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(25),
+                ),
+              ),
+              child: const Text(
+                'Actualizar Ubicación',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 
+  Widget _buildLocationControls() {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        children: [
           // Estado de ubicación
-          Positioned(
-            bottom: 20,
-            left: 20,
-            right: 20,
-            child: Consumer<LocationProvider>(
-              builder: (context, locationProvider, child) {
-                return Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 15,
-                    vertical: 10,
+          Consumer<LocationProvider>(
+            builder: (context, locationProvider, child) {
+              return Container(
+                padding: const EdgeInsets.all(15),
+                decoration: BoxDecoration(
+                  gradient: AppColors.cardGradient,
+                  borderRadius: BorderRadius.circular(15),
+                  border: Border.all(
+                    color: Colors.white.withOpacity(0.1),
+                    width: 1,
                   ),
-                  decoration: BoxDecoration(
-                    color: Colors.black.withOpacity(0.7),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(
-                        locationProvider.hasLocationPermission
-                            ? Icons.location_on
-                            : Icons.location_off,
-                        color:
-                            locationProvider.hasLocationPermission
-                                ? AppColors.lightGreen
-                                : AppColors.sosRed,
-                        size: 20,
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.location_on,
+                      color: _currentPosition != null ? Colors.green : Colors.orange,
+                      size: 24,
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            _currentPosition != null ? 'Ubicación obtenida' : 'Obteniendo ubicación...',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
+                          ),
+                          if (_currentPosition != null) ...[
+                            const SizedBox(height: 5),
+                            Text(
+                              'Lat: ${_currentPosition!.latitude.toStringAsFixed(6)}',
+                              style: const TextStyle(
+                                color: Colors.white70,
+                                fontSize: 12,
+                              ),
+                            ),
+                            Text(
+                              'Lng: ${_currentPosition!.longitude.toStringAsFixed(6)}',
+                              style: const TextStyle(
+                                color: Colors.white70,
+                                fontSize: 12,
+                              ),
+                            ),
+                          ],
+                        ],
                       ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: Text(
-                          locationProvider.locationStatus,
+                    ),
+                    IconButton(
+                      onPressed: _getCurrentLocation,
+                      icon: const Icon(Icons.refresh, color: AppColors.lightBlue),
+                      tooltip: 'Actualizar ubicación',
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+          const SizedBox(height: 15),
+          
+          // Botón de compartir ubicación
+          GestureDetector(
+            onTap: _toggleLocationSharing,
+            child: AnimatedBuilder(
+              animation: _pulseAnimation,
+              builder: (context, child) {
+                return Transform.scale(
+                  scale: _isSharingLocation ? _pulseAnimation.value : 1.0,
+                  child: Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(vertical: 20),
+                    decoration: BoxDecoration(
+                      gradient: _isSharingLocation
+                          ? LinearGradient(
+                              colors: [
+                                AppColors.dangerRed.withOpacity(0.8),
+                                AppColors.sosOrange.withOpacity(0.8),
+                              ],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            )
+                          : LinearGradient(
+                              colors: [
+                                AppColors.lightBlue.withOpacity(0.8),
+                                AppColors.primaryBlue.withOpacity(0.8),
+                              ],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        color: Colors.white.withOpacity(0.3),
+                        width: 2,
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          _isSharingLocation ? Icons.location_off : Icons.share_location,
+                          color: Colors.white,
+                          size: 28,
+                        ),
+                        const SizedBox(width: 15),
+                        Text(
+                          _isSharingLocation
+                              ? 'Dejar de Compartir Ubicación'
+                              : 'Compartir Ubicación en Tiempo Real',
                           style: const TextStyle(
                             color: Colors.white,
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 );
               },
@@ -245,361 +398,6 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
         ],
       ),
     );
-  }
-
-  Widget _buildLocationInfo() {
-    return Consumer<LocationProvider>(
-      builder: (context, locationProvider, child) {
-        return Container(
-          padding: const EdgeInsets.all(25),
-          decoration: BoxDecoration(
-            gradient: AppColors.cardGradient,
-            borderRadius: BorderRadius.circular(25),
-            border: Border.all(color: Colors.white.withOpacity(0.1), width: 1),
-          ),
-          child: Column(
-            children: [
-              Row(
-                children: [
-                  Icon(
-                    Icons.info_outline,
-                    color: AppColors.lightBlue,
-                    size: 30,
-                  ),
-                  const SizedBox(width: 15),
-                  Text(
-                    'Información de Ubicación',
-                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ],
-              ),
-
-              const SizedBox(height: 20),
-
-              if (locationProvider.currentPosition != null) ...[
-                _buildLocationDetail(
-                  'Latitud',
-                  locationProvider.currentPosition!.latitude.toStringAsFixed(6),
-                  Icons.explore,
-                ),
-                const SizedBox(height: 15),
-                _buildLocationDetail(
-                  'Longitud',
-                  locationProvider.currentPosition!.longitude.toStringAsFixed(
-                    6,
-                  ),
-                  Icons.explore,
-                ),
-                const SizedBox(height: 15),
-                _buildLocationDetail(
-                  'Precisión',
-                  '${locationProvider.currentPosition!.accuracy.toStringAsFixed(1)}m',
-                  Icons.gps_fixed,
-                ),
-                const SizedBox(height: 15),
-                _buildLocationDetail(
-                  'Altitud',
-                  locationProvider.currentPosition!.altitude > 0
-                      ? '${locationProvider.currentPosition!.altitude.toStringAsFixed(1)}m'
-                      : 'No disponible',
-                  Icons.height,
-                ),
-              ] else ...[
-                Container(
-                  padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(15),
-                  ),
-                  child: Column(
-                    children: [
-                      Icon(Icons.location_off, color: Colors.white70, size: 40),
-                      const SizedBox(height: 10),
-                      Text(
-                        'Ubicación no disponible',
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      const SizedBox(height: 5),
-                      Text(
-                        'Verifica los permisos de ubicación',
-                        style: Theme.of(
-                          context,
-                        ).textTheme.bodyMedium?.copyWith(color: Colors.white70),
-                        textAlign: TextAlign.center,
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildLocationDetail(String label, String value, IconData icon) {
-    return Row(
-      children: [
-        Container(
-          padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            color: AppColors.lightBlue.withOpacity(0.2),
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: Icon(icon, color: AppColors.lightBlue, size: 20),
-        ),
-        const SizedBox(width: 15),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                label,
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: Colors.white70,
-                  fontSize: 12,
-                ),
-              ),
-              Text(
-                value,
-                style: Theme.of(
-                  context,
-                ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildLocationActions() {
-    return Consumer<LocationProvider>(
-      builder: (context, locationProvider, child) {
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Acciones de Ubicación',
-              style: Theme.of(
-                context,
-              ).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w600),
-            ),
-            const SizedBox(height: 20),
-
-            Row(
-              children: [
-                // Botón de actualizar ubicación
-                Expanded(
-                  child: _buildActionButton(
-                    icon: Icons.refresh,
-                    label: 'Actualizar',
-                    gradient: AppColors.safeGradient,
-                    onTap: () => _updateLocation(locationProvider),
-                  ),
-                ),
-
-                const SizedBox(width: 15),
-
-                // Botón de compartir ubicación
-                Expanded(
-                  child: _buildActionButton(
-                    icon:
-                        _isSharingLocation ? Icons.stop : Icons.share_location,
-                    label: _isSharingLocation ? 'Detener' : 'Compartir',
-                    gradient:
-                        _isSharingLocation
-                            ? AppColors.sosGradient
-                            : AppColors.safeGradient,
-                    onTap: () => _toggleLocationSharing(),
-                  ),
-                ),
-              ],
-            ),
-
-            const SizedBox(height: 15),
-
-            // Botón de permisos
-            if (!locationProvider.hasLocationPermission)
-              _buildActionButton(
-                icon: Icons.location_on,
-                label: 'Solicitar Permisos',
-                gradient: AppColors.safeGradient,
-                onTap: () => _requestLocationPermission(locationProvider),
-                isFullWidth: true,
-              ),
-          ],
-        );
-      },
-    );
-  }
-
-  Widget _buildActionButton({
-    required IconData icon,
-    required String label,
-    required LinearGradient gradient,
-    required VoidCallback onTap,
-    bool isFullWidth = false,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        height: 80,
-        width: isFullWidth ? double.infinity : null,
-        decoration: BoxDecoration(
-          gradient: gradient,
-          borderRadius: BorderRadius.circular(20),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.2),
-              blurRadius: 10,
-              offset: const Offset(0, 5),
-            ),
-          ],
-        ),
-        child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(icon, color: Colors.white, size: 28),
-              const SizedBox(height: 5),
-              Text(
-                label,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildLocationStats() {
-    return Consumer<LocationProvider>(
-      builder: (context, locationProvider, child) {
-        final stats = locationProvider.getLocationStats();
-
-        return Container(
-          padding: const EdgeInsets.all(25),
-          decoration: BoxDecoration(
-            gradient: AppColors.cardGradient,
-            borderRadius: BorderRadius.circular(25),
-            border: Border.all(color: Colors.white.withOpacity(0.1), width: 1),
-          ),
-          child: Column(
-            children: [
-              Row(
-                children: [
-                  Icon(Icons.analytics, color: AppColors.lightGreen, size: 30),
-                  const SizedBox(width: 15),
-                  Text(
-                    'Estadísticas de Ubicación',
-                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ],
-              ),
-
-              const SizedBox(height: 20),
-
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  _buildStatCard(
-                    'Ubicaciones',
-                    stats['totalLocations'].toString(),
-                    Icons.location_on,
-                    AppColors.primaryBlue,
-                  ),
-                  _buildStatCard(
-                    'Distancia',
-                    '${(stats['totalDistance'] / 1000).toStringAsFixed(1)}km',
-                    Icons.straighten,
-                    AppColors.lightGreen,
-                  ),
-                  _buildStatCard(
-                    'Velocidad',
-                    '${stats['averageSpeed'].toStringAsFixed(1)}m/s',
-                    Icons.speed,
-                    AppColors.infoBlue,
-                  ),
-                ],
-              ),
-
-              const SizedBox(height: 20),
-
-              ElevatedButton.icon(
-                onPressed:
-                    stats['totalLocations'] > 0
-                        ? () => _clearLocationHistory(locationProvider)
-                        : null,
-                icon: const Icon(Icons.clear_all),
-                label: const Text('Limpiar Historial'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.sosRed,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 20,
-                    vertical: 12,
-                  ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildStatCard(
-    String label,
-    String value,
-    IconData icon,
-    Color color,
-  ) {
-    return Column(
-      children: [
-        Container(
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: color.withOpacity(0.2),
-            borderRadius: BorderRadius.circular(15),
-          ),
-          child: Icon(icon, color: color, size: 24),
-        ),
-        const SizedBox(height: 10),
-        Text(
-          value,
-          style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-            fontWeight: FontWeight.bold,
-            color: color,
-          ),
-        ),
-        Text(
-          label,
-          style: Theme.of(
-            context,
-          ).textTheme.bodyMedium?.copyWith(color: Colors.white70, fontSize: 12),
-        ),
-      ],
-    );
-  }
-
-  void _updateLocation(LocationProvider locationProvider) {
-    locationProvider.updateLocation();
-    _showMessage('Ubicación actualizada');
   }
 
   void _toggleLocationSharing() {
@@ -609,53 +407,10 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
 
     if (_isSharingLocation) {
       _showMessage('Compartiendo ubicación en tiempo real');
-      // Aquí se implementaría la lógica real de compartir ubicación
+      // Aquí podrías implementar el envío periódico de ubicación
     } else {
-      _showMessage('Compartir ubicación detenido');
+      _showMessage('Dejaste de compartir ubicación');
     }
-  }
-
-  void _requestLocationPermission(LocationProvider locationProvider) {
-    locationProvider.requestLocationPermission();
-    _showMessage('Solicitando permisos de ubicación');
-  }
-
-  void _clearLocationHistory(LocationProvider locationProvider) {
-    showDialog(
-      context: context,
-      builder:
-          (context) => AlertDialog(
-            backgroundColor: AppColors.cardBackground,
-            title: const Text(
-              'Limpiar Historial',
-              style: TextStyle(color: Colors.white),
-            ),
-            content: const Text(
-              '¿Estás seguro de que quieres limpiar todo el historial de ubicaciones? Esta acción no se puede deshacer.',
-              style: TextStyle(color: Colors.white70),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text(
-                  'Cancelar',
-                  style: TextStyle(color: AppColors.lightBlue),
-                ),
-              ),
-              TextButton(
-                onPressed: () {
-                  locationProvider.clearLocationHistory();
-                  Navigator.pop(context);
-                  _showMessage('Historial de ubicaciones limpiado');
-                },
-                child: const Text(
-                  'Limpiar',
-                  style: TextStyle(color: AppColors.sosRed),
-                ),
-              ),
-            ],
-          ),
-    );
   }
 
   void _showMessage(String message) {

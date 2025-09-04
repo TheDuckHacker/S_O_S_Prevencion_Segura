@@ -9,7 +9,7 @@ class AppConfig {
     'staging':
         'https://prevencion-segura-staging.up.railway.app/api', // Railway
     'production':
-        'https://prevencion-segura-2024.up.railway.app/api', // Railway (gratis)
+        'https://s-o-s-prevencion-segura.onrender.com/api', // Render (gratis)
   };
 
   // Obtener URL del servidor según el entorno

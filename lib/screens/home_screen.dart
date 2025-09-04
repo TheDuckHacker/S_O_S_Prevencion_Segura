@@ -7,6 +7,7 @@ import 'sos_screen.dart';
 import 'education_screen.dart';
 import 'history_screen.dart';
 import 'map_screen.dart';
+import 'contacts_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -120,9 +121,13 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           ),
           IconButton(
             onPressed: () {
-              // Navegar a configuración
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const ContactsScreen()),
+              );
             },
-            icon: const Icon(Icons.settings, color: Colors.white, size: 28),
+            icon: const Icon(Icons.contacts, color: Colors.white, size: 28),
+            tooltip: 'Contactos de Emergencia',
           ),
         ],
       ),

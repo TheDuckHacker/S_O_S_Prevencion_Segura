@@ -96,6 +96,31 @@ class WhatsAppService {
     }
   }
 
+  // Enviar ubicación en tiempo real a todos los contactos
+  static Future<void> shareLocationToAllContacts({
+    required String location,
+    required String message,
+  }) async {
+    try {
+      final contacts = await getEmergencyContacts();
+
+      if (contacts.isEmpty) {
+        debugPrint('No hay contactos de emergencia configurados');
+        return;
+      }
+
+      for (final contact in contacts) {
+        await shareLocation(
+          phoneNumber: contact['phone'],
+          location: location,
+          message: message,
+        );
+      }
+    } catch (e) {
+      debugPrint('Error compartiendo ubicación a todos los contactos: $e');
+    }
+  }
+
   // Enviar ubicación en tiempo real
   static Future<void> shareLocation({
     required String phoneNumber,
@@ -106,13 +131,14 @@ class WhatsAppService {
       final locationMessage = '''
 🛡️ *PREVENCIÓN SEGURA* 🛡️
 
-📍 *Ubicación Compartida*
+📍 *Ubicación en Tiempo Real*
 $message
 
 🗺️ *Coordenadas:* $location
 ⏰ *Hora:* ${DateTime.now().toString()}
 
 *Esta ubicación fue compartida automáticamente por la app Prevención Segura*
+*Puedes hacer clic en las coordenadas para abrir en Google Maps*
 ''';
 
       await _sendWhatsAppMessage(
@@ -190,6 +216,68 @@ Hola $contactName,
       return await canLaunchUrl(Uri.parse(url));
     } catch (e) {
       return false;
+    }
+  }
+
+  // Enviar grabación por WhatsApp
+  static Future<void> sendRecordingToAllContacts({
+    required String filePath,
+    required String message,
+    required String location,
+  }) async {
+    try {
+      final contacts = await getEmergencyContacts();
+      
+      if (contacts.isEmpty) {
+        debugPrint('No hay contactos de emergencia configurados');
+        return;
+      }
+
+      for (final contact in contacts) {
+        await _sendRecordingMessage(
+          phoneNumber: contact['phone'],
+          filePath: filePath,
+          message: message,
+          location: location,
+          contactName: contact['name'],
+        );
+      }
+    } catch (e) {
+      debugPrint('Error enviando grabación a contactos: $e');
+    }
+  }
+
+  // Enviar mensaje con grabación
+  static Future<void> _sendRecordingMessage({
+    required String phoneNumber,
+    required String filePath,
+    required String message,
+    required String location,
+    required String contactName,
+  }) async {
+    try {
+      final recordingMessage = '''
+🎥 *EVIDENCIA GRABADA* 🎥
+
+Hola $contactName,
+
+*Se ha grabado evidencia de una situación de emergencia.*
+
+📝 *Descripción:* $message
+📍 *Ubicación:* $location
+⏰ *Hora:* ${DateTime.now().toString()}
+
+*Archivo de evidencia:* $filePath
+
+*Esta evidencia fue grabada automáticamente por la app Prevención Segura*
+''';
+
+      await _sendWhatsAppMessage(
+        phoneNumber: phoneNumber,
+        message: recordingMessage,
+      );
+    } catch (e) {
+      debugPrint('Error enviando mensaje con grabación: $e');
     }
   }
 

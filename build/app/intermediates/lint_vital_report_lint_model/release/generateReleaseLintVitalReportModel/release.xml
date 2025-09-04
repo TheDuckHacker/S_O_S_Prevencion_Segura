@@ -9,6 +9,7 @@
     proguardFiles="C:\Users\Legion\mi_app\build\app\intermediates\default_proguard_files\global\proguard-android-optimize.txt-8.7.0;C:\dev\flutter\packages\flutter_tools\gradle\flutter_proguard_rules.pro;proguard-rules.pro"
     partialResultsDir="C:\Users\Legion\mi_app\build\app\intermediates\lint_vital_partial_results\release\lintVitalAnalyzeRelease\out">
   <buildFeatures
+      coreLibraryDesugaring="true"
       namespacing="REQUIRED"/>
   <sourceProviders>
     <sourceProvider
@@ -32,6 +33,6 @@
       applicationId="com.example.mi_app"
       generatedSourceFolders="C:\Users\Legion\mi_app\build\app\generated\ap_generated_sources\release\out"
       generatedResourceFolders="C:\Users\Legion\mi_app\build\app\generated\res\resValues\release"
-      desugaredMethodsFiles="C:\Users\Legion\.gradle\caches\8.10.2\transforms\58b2fa97deb6620e81e8f2146e68c814\transformed\D8BackportedDesugaredMethods.txt">
+      desugaredMethodsFiles="C:\Users\Legion\.gradle\caches\8.10.2\transforms\90cea09a135f29f42029ef0a5ee19035\transformed\desugar_jdk_libs_configuration-2.0.4-desugar-lint.txt;C:\Users\Legion\.gradle\caches\8.10.2\transforms\4bbcc00f0192e6034a116bcc24811709\transformed\D8BackportedDesugaredMethods.txt">
   </artifact>
 </variant>

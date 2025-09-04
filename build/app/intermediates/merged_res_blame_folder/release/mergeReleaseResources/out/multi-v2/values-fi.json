@@ -1,7 +1,7 @@
 {
     "logs": [
         {
-            "outputFile": "com.example.mi_app-mergeReleaseResources-42:/values-fi/values-fi.xml",
+            "outputFile": "com.example.mi_app-mergeReleaseResources-43:/values-fi/values-fi.xml",
             "map": [
                 {
                     "source": "C:\\Users\\Legion\\.gradle\\caches\\8.10.2\\transforms\\3a4dcd3e8c92efa77cfa193b658940d9\\transformed\\appcompat-1.1.0\\res\\values-fi\\values-fi.xml",
