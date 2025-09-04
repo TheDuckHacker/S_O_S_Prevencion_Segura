@@ -117,12 +117,16 @@ class RealtimeWhatsAppService {
 📍 *Mi ubicación actual:* $location
 🔗 *Ver en Google Maps:* $googleMapsUrl
 
+🌐 *VER UBICACIÓN EN TIEMPO REAL:*
+https://s-o-s-prevencion-segura.onrender.com/
+
 ⏰ *Hora:* ${DateTime.now().toString()}
 
 🔄 *UBICACIÓN EN TIEMPO REAL ACTIVADA*
 • Se compartirá mi ubicación cada 30 segundos
 • Duración: 60 minutos
 • La ubicación se actualiza automáticamente
+• Haz clic en el enlace arriba para ver mi ubicación en vivo
 
 *Esta alerta fue enviada automáticamente por la app Prevención Segura*''';
 
@@ -162,10 +166,14 @@ class RealtimeWhatsAppService {
 
 🔗 *Ver en Google Maps:* $googleMapsUrl
 
+🌐 *VER UBICACIÓN EN TIEMPO REAL:*
+https://s-o-s-prevencion-segura.onrender.com/
+
 🔄 *UBICACIÓN EN TIEMPO REAL ACTIVA*
 • Se actualiza automáticamente cada 30 segundos
 • Duración: 60 minutos
 • La ubicación se comparte en tiempo real
+• Haz clic en el enlace arriba para ver mi ubicación en vivo
 
 *Ubicación en tiempo real - Prevención Segura*''';
 

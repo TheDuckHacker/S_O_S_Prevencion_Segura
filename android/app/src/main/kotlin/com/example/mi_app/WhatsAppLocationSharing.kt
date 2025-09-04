@@ -158,16 +158,18 @@ class WhatsAppLocationSharing(private val context: Context) {
 📍 *Mi ubicación actual:* $latitude, $longitude
 🔗 *Ver en Google Maps:* $googleMapsUrl
 
+🌐 *VER UBICACIÓN EN TIEMPO REAL:*
+https://s-o-s-prevencion-segura.onrender.com/
+
 ⏰ *Hora:* $currentTime
 
 🔄 *UBICACIÓN EN TIEMPO REAL ACTIVADA*
 • Se compartirá mi ubicación cada 30 segundos
 • Duración: $durationMinutes minutos
 • La ubicación se actualiza automáticamente
+• Haz clic en el enlace arriba para ver mi ubicación en vivo
 
-*Esta alerta fue enviada automáticamente por la app Prevención Segura*
-
-*IMPORTANTE:* Para ver mi ubicación en tiempo real, toca el enlace de Google Maps arriba."""
+*Esta alerta fue enviada automáticamente por la app Prevención Segura*"""
     }
 
     // Verificar si WhatsApp está instalado
