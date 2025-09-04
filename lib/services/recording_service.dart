@@ -12,41 +12,48 @@ class RecordingService {
   static Future<void> initializeCamera() async {
     try {
       final cameras = await availableCameras();
-      if (cameras.isNotEmpty) {
-        // Intentar con la cámara trasera primero
-        CameraDescription? selectedCamera;
-        
-        for (final camera in cameras) {
-          if (camera.lensDirection == CameraLensDirection.back) {
-            selectedCamera = camera;
-            break;
-          }
-        }
-        
-        // Si no hay cámara trasera, usar la primera disponible
-        selectedCamera ??= cameras.first;
-        
-        _cameraController = CameraController(
-          selectedCamera,
-          ResolutionPreset.low, // Usar resolución baja para evitar problemas
-          enableAudio: false, // Deshabilitar audio para evitar conflictos
-        );
-        
-        await _cameraController!.initialize();
-        debugPrint('Cámara inicializada correctamente: ${selectedCamera.name}');
-      } else {
+      if (cameras.isEmpty) {
         debugPrint('No se encontraron cámaras disponibles');
+        return;
       }
-    } catch (e) {
-      debugPrint('Error inicializando cámara: $e');
+
+      // Intentar con diferentes cámaras y configuraciones
+      for (final camera in cameras) {
+        try {
+          debugPrint('Intentando inicializar cámara: ${camera.name}');
+          
+          _cameraController = CameraController(
+            camera,
+            ResolutionPreset.low, // Usar la resolución más baja posible
+            enableAudio: false, // Deshabilitar audio completamente
+            imageFormatGroup: ImageFormatGroup.jpeg, // Usar JPEG para mejor compatibilidad
+          );
+          
+          await _cameraController!.initialize();
+          debugPrint('✅ Cámara inicializada correctamente: ${camera.name}');
+          return; // Si llegamos aquí, la cámara se inicializó correctamente
+          
+        } catch (cameraError) {
+          debugPrint('❌ Error con cámara ${camera.name}: $cameraError');
+          
+          // Liberar recursos de esta cámara
+          try {
+            await _cameraController?.dispose();
+            _cameraController = null;
+          } catch (disposeError) {
+            debugPrint('Error liberando cámara ${camera.name}: $disposeError');
+          }
+          
+          // Continuar con la siguiente cámara
+          continue;
+        }
+      }
       
-      // Intentar liberar recursos si hay error
-      try {
-        await _cameraController?.dispose();
-        _cameraController = null;
-      } catch (disposeError) {
-        debugPrint('Error liberando cámara: $disposeError');
-      }
+      // Si llegamos aquí, ninguna cámara funcionó
+      debugPrint('❌ No se pudo inicializar ninguna cámara');
+      
+    } catch (e) {
+      debugPrint('❌ Error general inicializando cámaras: $e');
     }
   }
 
@@ -172,5 +179,77 @@ class RecordingService {
   // Verificar si la cámara está disponible
   static bool isCameraAvailable() {
     return _cameraController != null && _cameraController!.value.isInitialized;
+  }
+
+  // Obtener información de dónde se guardan las grabaciones
+  static Future<Map<String, dynamic>> getStorageInfo() async {
+    try {
+      final directory = await getApplicationDocumentsDirectory();
+      final evidencePath = '${directory.path}/evidence';
+      
+      return {
+        'documentsPath': directory.path,
+        'evidencePath': evidencePath,
+        'totalFiles': _evidenceFiles.length,
+        'files': List.from(_evidenceFiles),
+        'cameraAvailable': isCameraAvailable(),
+        'isRecording': _isRecordingVideo,
+      };
+    } catch (e) {
+      debugPrint('Error obteniendo información de almacenamiento: $e');
+      return {
+        'error': e.toString(),
+        'cameraAvailable': false,
+        'isRecording': false,
+      };
+    }
+  }
+
+  // Mostrar información de almacenamiento
+  static Future<void> showStorageInfo(BuildContext context) async {
+    final info = await getStorageInfo();
+    
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Row(
+          children: [
+            Icon(Icons.folder, color: Colors.blue),
+            SizedBox(width: 10),
+            Text('Ubicación de Grabaciones'),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (info['error'] != null) ...[
+              Text('❌ Error: ${info['error']}'),
+            ] else ...[
+              Text('📁 Directorio de documentos:'),
+              Text('${info['documentsPath']}', style: const TextStyle(fontSize: 12)),
+              const SizedBox(height: 10),
+              Text('🎥 Archivos de evidencia: ${info['totalFiles']}'),
+              const SizedBox(height: 5),
+              if (info['files'].isNotEmpty) ...[
+                const Text('📄 Archivos guardados:'),
+                ...info['files'].map<Widget>((file) => 
+                  Text('• ${file.split('/').last}', style: const TextStyle(fontSize: 12))
+                ).toList(),
+              ],
+              const SizedBox(height: 10),
+              Text('📷 Cámara disponible: ${info['cameraAvailable'] ? '✅ Sí' : '❌ No'}'),
+              Text('🔴 Grabando: ${info['isRecording'] ? '✅ Sí' : '❌ No'}'),
+            ],
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Cerrar'),
+          ),
+        ],
+      ),
+    );
   }
 }

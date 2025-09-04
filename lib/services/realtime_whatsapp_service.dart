@@ -35,20 +35,18 @@ class RealtimeWhatsAppService {
     );
 
     // Iniciar timer para enviar ubicación cada 30 segundos
-    _locationTimer = Timer.periodic(
-      const Duration(seconds: 30),
-      (timer) async {
-        await _sendLocationUpdate(phoneNumbers, threatDescription: threatDescription, additionalText: additionalText);
-      },
-    );
+    _locationTimer = Timer.periodic(const Duration(seconds: 30), (timer) async {
+      await _sendLocationUpdate(
+        phoneNumbers,
+        threatDescription: threatDescription,
+        additionalText: additionalText,
+      );
+    });
 
     // Programar parada automática
-    Timer(
-      Duration(minutes: durationMinutes),
-      () {
-        stopRealtimeLocationSharing();
-      },
-    );
+    Timer(Duration(minutes: durationMinutes), () {
+      stopRealtimeLocationSharing();
+    });
   }
 
   // Detener compartir ubicación en tiempo real
@@ -82,7 +80,8 @@ class RealtimeWhatsAppService {
       );
 
       final location = '${position.latitude}, ${position.longitude}';
-      final googleMapsUrl = 'https://maps.google.com/?q=${position.latitude},${position.longitude}';
+      final googleMapsUrl =
+          'https://maps.google.com/?q=${position.latitude},${position.longitude}';
 
       final message = '''🚨 *ALERTA SOS ACTIVA* 🚨
 
@@ -105,14 +104,17 @@ class RealtimeWhatsAppService {
         await _sendWhatsAppMessage(phoneNumber, message);
         await Future.delayed(const Duration(milliseconds: 500));
       }
-
     } catch (e) {
       debugPrint('Error enviando mensaje inicial: $e');
     }
   }
 
   // Enviar actualización de ubicación
-  static Future<void> _sendLocationUpdate(List<String> phoneNumbers, {String threatDescription = '', String additionalText = ''}) async {
+  static Future<void> _sendLocationUpdate(
+    List<String> phoneNumbers, {
+    String threatDescription = '',
+    String additionalText = '',
+  }) async {
     try {
       final position = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.bestForNavigation,
@@ -120,7 +122,8 @@ class RealtimeWhatsAppService {
       );
 
       final location = '${position.latitude}, ${position.longitude}';
-      final googleMapsUrl = 'https://maps.google.com/?q=${position.latitude},${position.longitude}';
+      final googleMapsUrl =
+          'https://maps.google.com/?q=${position.latitude},${position.longitude}';
 
       final message = '''📍 *ACTUALIZACIÓN DE UBICACIÓN EN TIEMPO REAL*
 
@@ -146,14 +149,16 @@ class RealtimeWhatsAppService {
       }
 
       debugPrint('📍 Ubicación actualizada enviada: $location');
-
     } catch (e) {
       debugPrint('Error enviando actualización de ubicación: $e');
     }
   }
 
   // Enviar mensaje por WhatsApp
-  static Future<void> _sendWhatsAppMessage(String phoneNumber, String message) async {
+  static Future<void> _sendWhatsAppMessage(
+    String phoneNumber,
+    String message,
+  ) async {
     try {
       final encodedMessage = Uri.encodeComponent(message);
       final whatsappUrl = 'https://wa.me/$phoneNumber?text=$encodedMessage';
@@ -183,16 +188,19 @@ class RealtimeWhatsAppService {
     try {
       final prefs = await SharedPreferences.getInstance();
       final contactsJson = prefs.getString('emergency_contacts');
-      
+
       if (contactsJson != null) {
-        final List<dynamic> contacts = 
+        final List<dynamic> contacts =
             (prefs.getString('emergency_contacts') ?? '[]').split(',');
-        return contacts.where((contact) => contact.toString().isNotEmpty).cast<String>().toList();
+        return contacts
+            .where((contact) => contact.toString().isNotEmpty)
+            .cast<String>()
+            .toList();
       }
     } catch (e) {
       debugPrint('Error obteniendo contactos de emergencia: $e');
     }
-    
+
     return [];
   }
 

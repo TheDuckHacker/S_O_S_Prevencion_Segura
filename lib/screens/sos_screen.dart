@@ -5,6 +5,7 @@ import '../providers/location_provider.dart';
 import '../utils/app_colors.dart';
 import '../widgets/whatsapp_alert_button.dart';
 import '../services/realtime_whatsapp_service.dart';
+import '../services/recording_service.dart';
 
 class SosScreen extends StatefulWidget {
   const SosScreen({super.key});
@@ -353,43 +354,63 @@ class _SosScreenState extends State<SosScreen> with TickerProviderStateMixin {
       builder: (context, sosProvider, child) {
         bool isSosActive = sosProvider.isSosActive;
 
-        return Row(
+        return Column(
           children: [
-            // Botón de grabación
-            Expanded(
-              child: _buildActionButton(
-                icon:
-                    sosProvider.isRecording
-                        ? Icons.stop
-                        : Icons.fiber_manual_record,
-                label: sosProvider.isRecording ? 'Detener' : 'Grabar',
-                gradient:
-                    sosProvider.isRecording
-                        ? AppColors.dangerRed.toString().contains('gradient')
-                            ? AppColors.safeGradient
-                            : LinearGradient(
-                              colors: [
-                                AppColors.dangerRed,
-                                AppColors.dangerRed,
-                              ],
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                            )
-                        : AppColors.safeGradient,
-                onTap: () => _handleRecording(sosProvider),
-                isActive: sosProvider.isRecording,
-              ),
+            Row(
+              children: [
+                // Botón de grabación
+                Expanded(
+                  child: _buildActionButton(
+                    icon:
+                        sosProvider.isRecording
+                            ? Icons.stop
+                            : Icons.fiber_manual_record,
+                    label: sosProvider.isRecording ? 'Detener' : 'Grabar',
+                    gradient:
+                        sosProvider.isRecording
+                            ? AppColors.dangerRed.toString().contains('gradient')
+                                ? AppColors.safeGradient
+                                : LinearGradient(
+                                  colors: [
+                                    AppColors.dangerRed,
+                                    AppColors.dangerRed,
+                                  ],
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                )
+                            : AppColors.safeGradient,
+                    onTap: () => _handleRecording(sosProvider),
+                    isActive: sosProvider.isRecording,
+                  ),
+                ),
+
+                const SizedBox(width: 15),
+
+                // Botón de ubicación
+                Expanded(
+                  child: _buildActionButton(
+                    icon: Icons.location_on,
+                    label: 'Ubicación',
+                    gradient: AppColors.safeGradient,
+                    onTap: () => _showLocationInfo(),
+                    isActive: false,
+                  ),
+                ),
+              ],
             ),
-
-            const SizedBox(width: 15),
-
-            // Botón de ubicación
-            Expanded(
+            const SizedBox(height: 15),
+            // Botón de información de almacenamiento
+            SizedBox(
+              width: double.infinity,
               child: _buildActionButton(
-                icon: Icons.location_on,
-                label: 'Ubicación',
-                gradient: AppColors.safeGradient,
-                onTap: () => _showLocationInfo(),
+                icon: Icons.folder_open,
+                label: 'Ver Grabaciones Guardadas',
+                gradient: const LinearGradient(
+                  colors: [Colors.blue, Colors.lightBlue],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                onTap: () => _showStorageInfo(),
                 isActive: false,
               ),
             ),
@@ -649,12 +670,23 @@ class _SosScreenState extends State<SosScreen> with TickerProviderStateMixin {
     }
   }
 
-  void _handleRecording(SosProvider sosProvider) {
+  void _handleRecording(SosProvider sosProvider) async {
     if (sosProvider.isRecording) {
       sosProvider.stopRecording();
       _recordingController.stop();
       _showMessage('Grabación detenida');
     } else {
+      // Verificar si la cámara está disponible antes de iniciar
+      if (!RecordingService.isCameraAvailable()) {
+        _showMessage('Cámara no disponible. Intentando inicializar...');
+        await RecordingService.initializeCamera();
+        
+        if (!RecordingService.isCameraAvailable()) {
+          _showMessage('❌ No se pudo acceder a la cámara. Verifica los permisos.');
+          return;
+        }
+      }
+      
       sosProvider.startRecording();
       _recordingController.repeat();
       _showMessage('Grabación iniciada');
@@ -842,5 +874,9 @@ class _SosScreenState extends State<SosScreen> with TickerProviderStateMixin {
     } catch (e) {
       _showMessage('Error deteniendo compartir ubicación: $e');
     }
+  }
+
+  void _showStorageInfo() {
+    RecordingService.showStorageInfo(context);
   }
 }
