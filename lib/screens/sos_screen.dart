@@ -4,12 +4,8 @@ import '../providers/sos_provider.dart';
 import '../providers/location_provider.dart';
 import '../utils/app_colors.dart';
 import '../widgets/whatsapp_alert_button.dart';
-import '../services/realtime_whatsapp_service.dart';
 import '../services/recording_service.dart';
-import '../widgets/live_location_widget.dart';
-import '../widgets/live_location_status_widget.dart';
 import '../widgets/native_whatsapp_location_button.dart';
-import 'live_location_screen.dart';
 
 class SosScreen extends StatefulWidget {
   const SosScreen({super.key});
@@ -25,6 +21,7 @@ class _SosScreenState extends State<SosScreen> with TickerProviderStateMixin {
   late Animation<double> _recordingRotationAnimation;
 
   final TextEditingController _threatController = TextEditingController();
+  final TextEditingController _additionalDescriptionController = TextEditingController();
   String _selectedThreatType = 'Me siguen';
 
   final List<String> _threatTypes = [
@@ -671,15 +668,6 @@ class _SosScreenState extends State<SosScreen> with TickerProviderStateMixin {
                 phoneNumbers: _getEmergencyContacts(),
                 durationMinutes: 60,
               ),
-              const SizedBox(height: 15),
-              // Widget de estado de ubicación en tiempo real
-              const LiveLocationStatusWidget(),
-              const SizedBox(height: 15),
-              // Widget de ubicación en tiempo real
-              _buildLiveLocationWidget(),
-              const SizedBox(height: 15),
-              // Botón para detener compartir ubicación en tiempo real
-              _buildStopLocationSharingButton(),
             ],
           ),
         );
@@ -856,106 +844,10 @@ class _SosScreenState extends State<SosScreen> with TickerProviderStateMixin {
     return '0.0';
   }
 
-  Widget _buildStopLocationSharingButton() {
-    return FutureBuilder<bool>(
-      future: RealtimeWhatsAppService.isSharingLocation(),
-      builder: (context, snapshot) {
-        final isSharing = snapshot.data ?? false;
-
-        if (!isSharing) {
-          return const SizedBox.shrink();
-        }
-
-        return Container(
-          width: double.infinity,
-          height: 50,
-          decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              colors: [Colors.red, Colors.orange],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-            borderRadius: BorderRadius.circular(25),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.red.withOpacity(0.3),
-                blurRadius: 8,
-                offset: const Offset(0, 3),
-              ),
-            ],
-          ),
-          child: Material(
-            color: Colors.transparent,
-            child: InkWell(
-              borderRadius: BorderRadius.circular(25),
-              onTap: () => _stopLocationSharing(),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(Icons.location_off, color: Colors.white, size: 24),
-                  const SizedBox(width: 10),
-                  Text(
-                    'Detener Compartir Ubicación',
-                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  Future<void> _stopLocationSharing() async {
-    try {
-      await RealtimeWhatsAppService.stopRealtimeLocationSharing();
-      _showMessage('Compartir ubicación en tiempo real detenido');
-    } catch (e) {
-      _showMessage('Error deteniendo compartir ubicación: $e');
-    }
-  }
-
   void _showStorageInfo() {
     RecordingService.showStorageInfo(context);
   }
 
-  Widget _buildLiveLocationWidget() {
-    return FutureBuilder<bool>(
-      future: RealtimeWhatsAppService.isSharingLocation(),
-      builder: (context, snapshot) {
-        final isSharing = snapshot.data ?? false;
-
-        if (!isSharing) {
-          return const SizedBox.shrink();
-        }
-
-        // Calcular tiempo restante (60 minutos desde que se activó)
-        final endTime = DateTime.now().add(const Duration(minutes: 60));
-        final timeRemaining =
-            '${endTime.hour.toString().padLeft(2, '0')}:${endTime.minute.toString().padLeft(2, '0')}';
-
-        return GestureDetector(
-          onTap: () => _openLiveLocationScreen(),
-          child: LiveLocationCompactWidget(
-            isSharing: isSharing,
-            onStopSharing: () => _stopLocationSharing(),
-            timeRemaining: timeRemaining,
-          ),
-        );
-      },
-    );
-  }
-
-  void _openLiveLocationScreen() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => const LiveLocationScreen()),
-    );
-  }
 
   List<String> _getEmergencyContacts() {
     // Obtener contactos de emergencia desde WhatsAppService

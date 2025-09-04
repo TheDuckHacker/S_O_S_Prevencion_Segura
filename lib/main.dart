@@ -6,16 +6,12 @@ import 'providers/education_provider.dart';
 import 'providers/location_provider.dart';
 import 'utils/app_colors.dart';
 import 'services/auto_detection_service.dart';
-import 'services/realtime_whatsapp_service.dart';
-import 'services/whatsapp_business_api.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   // Inicializar servicios
   await AutoDetectionService.initialize();
-  await RealtimeWhatsAppService.initialize();
-  await WhatsAppBusinessAPI.initialize();
 
   runApp(const MiApp());
 }
