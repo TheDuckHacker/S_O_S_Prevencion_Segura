@@ -7,6 +7,7 @@ import '../widgets/whatsapp_alert_button.dart';
 import '../services/realtime_whatsapp_service.dart';
 import '../services/recording_service.dart';
 import '../widgets/live_location_widget.dart';
+import '../widgets/live_location_status_widget.dart';
 import 'live_location_screen.dart';
 
 class SosScreen extends StatefulWidget {
@@ -661,6 +662,9 @@ class _SosScreenState extends State<SosScreen> with TickerProviderStateMixin {
                   sosProvider.currentLocation,
                 ),
               ),
+              const SizedBox(height: 15),
+              // Widget de estado de ubicación en tiempo real
+              const LiveLocationStatusWidget(),
               const SizedBox(height: 15),
               // Widget de ubicación en tiempo real
               _buildLiveLocationWidget(),

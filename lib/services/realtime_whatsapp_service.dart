@@ -4,6 +4,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:async';
 import 'whatsapp_business_api.dart';
+import 'native_location_sharing.dart';
 
 class RealtimeWhatsAppService {
   static Timer? _locationTimer;
@@ -28,6 +29,21 @@ class RealtimeWhatsAppService {
 
     debugPrint('🚀 Iniciando compartir ubicación en tiempo real por WhatsApp');
 
+    // Intentar usar el servicio nativo primero
+    debugPrint('🚀 Intentando usar servicio nativo para ubicación en tiempo real');
+    final nativeSuccess = await NativeLocationSharing.shareLiveLocation(
+      phoneNumbers: phoneNumbers,
+      threatDescription: threatDescription,
+      durationMinutes: durationMinutes,
+    );
+
+    if (nativeSuccess) {
+      debugPrint('✅ Servicio nativo activado exitosamente');
+      return;
+    }
+
+    // Fallback: usar método tradicional
+    debugPrint('📱 Usando método tradicional de WhatsApp');
     // Enviar mensaje inicial
     await _sendInitialLocationMessage(
       threatDescription: threatDescription,
@@ -59,13 +75,22 @@ class RealtimeWhatsAppService {
     _locationTimer = null;
 
     await _saveSharingStatus(false, 0);
+    
+    // Detener servicio nativo si está activo
+    await NativeLocationSharing.stopLiveLocationSharing();
+    
     debugPrint('🛑 Deteniendo compartir ubicación en tiempo real');
   }
 
   // Verificar si se está compartiendo ubicación
   static Future<bool> isSharingLocation() async {
     final prefs = await SharedPreferences.getInstance();
-    return prefs.getBool(_isSharingKey) ?? false;
+    final localSharing = prefs.getBool(_isSharingKey) ?? false;
+    
+    // También verificar el servicio nativo
+    final nativeSharing = await NativeLocationSharing.isSharingLocation();
+    
+    return localSharing || nativeSharing;
   }
 
   // Enviar mensaje inicial con ubicación
@@ -145,8 +170,10 @@ class RealtimeWhatsAppService {
 
       // Intentar usar WhatsApp Business API primero
       if (WhatsAppBusinessAPI.isConfigured()) {
-        debugPrint('🚀 Usando WhatsApp Business API para ubicación en tiempo real');
-        
+        debugPrint(
+          '🚀 Usando WhatsApp Business API para ubicación en tiempo real',
+        );
+
         final results = await WhatsAppBusinessAPI.sendToMultipleContacts(
           phoneNumbers: phoneNumbers,
           latitude: position.latitude,
@@ -159,8 +186,10 @@ class RealtimeWhatsAppService {
         for (final result in results.values) {
           if (result) successCount++;
         }
-        
-        debugPrint('✅ WhatsApp Business API: $successCount/${phoneNumbers.length} mensajes enviados');
+
+        debugPrint(
+          '✅ WhatsApp Business API: $successCount/${phoneNumbers.length} mensajes enviados',
+        );
         return;
       }
 
