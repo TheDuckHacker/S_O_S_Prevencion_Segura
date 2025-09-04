@@ -365,9 +365,12 @@ class _SosScreenState extends State<SosScreen> with TickerProviderStateMixin {
                         sosProvider.isRecording
                             ? Icons.stop
                             : Icons.fiber_manual_record,
-                    label: sosProvider.isRecording 
-                        ? 'Detener' 
-                        : (sosProvider.isSosActive ? 'Grabar' : 'Activa SOS'),
+                    label:
+                        sosProvider.isRecording
+                            ? 'Detener'
+                            : (sosProvider.isSosActive
+                                ? 'Grabar'
+                                : 'Activa SOS'),
                     gradient:
                         sosProvider.isRecording
                             ? AppColors.dangerRed.toString().contains(
@@ -382,16 +385,18 @@ class _SosScreenState extends State<SosScreen> with TickerProviderStateMixin {
                                   begin: Alignment.topLeft,
                                   end: Alignment.bottomRight,
                                 )
-                            : (sosProvider.isSosActive 
-                                ? AppColors.safeGradient 
+                            : (sosProvider.isSosActive
+                                ? AppColors.safeGradient
                                 : LinearGradient(
-                                    colors: [Colors.grey, Colors.grey.shade600],
-                                    begin: Alignment.topLeft,
-                                    end: Alignment.bottomRight,
-                                  )),
-                    onTap: sosProvider.isSosActive 
-                        ? () => _handleRecording(sosProvider)
-                        : () => _showMessage('Primero activa la alerta SOS'),
+                                  colors: [Colors.grey, Colors.grey.shade600],
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                )),
+                    onTap:
+                        sosProvider.isSosActive
+                            ? () => _handleRecording(sosProvider)
+                            : () =>
+                                _showMessage('Primero activa la alerta SOS'),
                     isActive: sosProvider.isRecording,
                   ),
                 ),

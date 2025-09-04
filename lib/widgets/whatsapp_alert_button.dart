@@ -45,11 +45,7 @@ class WhatsAppAlertButton extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(
-                Icons.message,
-                color: Colors.white,
-                size: 28,
-              ),
+              const Icon(Icons.message, color: Colors.white, size: 28),
               const SizedBox(width: 12),
               Text(
                 'Enviar Alerta por WhatsApp',
@@ -69,19 +65,17 @@ class WhatsAppAlertButton extends StatelessWidget {
     try {
       // Crear el mensaje de alerta
       final alertMessage = _createAlertMessage();
-      
+
       // Crear la URL de WhatsApp
       final whatsappUrl = _createWhatsAppUrl(alertMessage);
-      
+
       // Intentar abrir WhatsApp
       final uri = Uri.parse(whatsappUrl);
-      
-      if (await canLaunchUrl(uri)) {
-        await launchUrl(
-          uri,
-          mode: LaunchMode.externalApplication,
-        );
-        
+
+      // Intentar abrir WhatsApp directamente
+      try {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+
         // Mostrar confirmación
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -102,10 +96,26 @@ class WhatsAppAlertButton extends StatelessWidget {
             ),
           );
         }
-      } else {
-        // WhatsApp no está instalado
+      } catch (e) {
+        // Si hay error, mostrar mensaje pero no el diálogo
         if (context.mounted) {
-          _showWhatsAppNotInstalledDialog(context);
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Row(
+                children: [
+                  const Icon(Icons.warning, color: Colors.white),
+                  const SizedBox(width: 10),
+                  Expanded(child: Text('Error abriendo WhatsApp: $e')),
+                ],
+              ),
+              backgroundColor: Colors.orange,
+              duration: const Duration(seconds: 4),
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+          );
         }
       }
     } catch (e) {
@@ -117,9 +127,7 @@ class WhatsAppAlertButton extends StatelessWidget {
               children: [
                 const Icon(Icons.error, color: Colors.white),
                 const SizedBox(width: 10),
-                Expanded(
-                  child: Text('Error al abrir WhatsApp: $e'),
-                ),
+                Expanded(child: Text('Error al abrir WhatsApp: $e')),
               ],
             ),
             backgroundColor: Colors.red,
@@ -136,7 +144,7 @@ class WhatsAppAlertButton extends StatelessWidget {
 
   String _createAlertMessage() {
     final googleMapsUrl = 'https://maps.google.com/?q=$latitude,$longitude';
-    
+
     return '''🚨 ALERTA SOS ACTIVA 🚨
 
 Descripción: $threatDescription${additionalText.isNotEmpty ? ' - $additionalText' : ''}
@@ -152,7 +160,7 @@ Descripción: $threatDescription${additionalText.isNotEmpty ? ' - $additionalTex
 
   String _createWhatsAppUrl(String message) {
     final encodedMessage = Uri.encodeComponent(message);
-    
+
     if (phoneNumber != null && phoneNumber!.isNotEmpty) {
       // Enviar a un número específico
       return 'https://wa.me/$phoneNumber?text=$encodedMessage';
@@ -172,11 +180,7 @@ Descripción: $threatDescription${additionalText.isNotEmpty ? ' - $additionalTex
           ),
           title: Row(
             children: [
-              Icon(
-                Icons.message,
-                color: const Color(0xFF25D366),
-                size: 30,
-              ),
+              Icon(Icons.message, color: const Color(0xFF25D366), size: 30),
               const SizedBox(width: 10),
               const Text('WhatsApp no encontrado'),
             ],
@@ -212,9 +216,10 @@ Descripción: $threatDescription${additionalText.isNotEmpty ? ' - $additionalTex
 
   Future<void> _openPlayStore(BuildContext context) async {
     try {
-      const playStoreUrl = 'https://play.google.com/store/apps/details?id=com.whatsapp';
+      const playStoreUrl =
+          'https://play.google.com/store/apps/details?id=com.whatsapp';
       final uri = Uri.parse(playStoreUrl);
-      
+
       if (await canLaunchUrl(uri)) {
         await launchUrl(uri, mode: LaunchMode.externalApplication);
       } else {
@@ -277,11 +282,7 @@ class WhatsAppAlertButtonCompact extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(
-                Icons.message,
-                color: Colors.white,
-                size: 24,
-              ),
+              const Icon(Icons.message, color: Colors.white, size: 24),
               const SizedBox(width: 8),
               Text(
                 'WhatsApp',
@@ -302,10 +303,10 @@ class WhatsAppAlertButtonCompact extends StatelessWidget {
       final alertMessage = _createAlertMessage();
       final whatsappUrl = _createWhatsAppUrl(alertMessage);
       final uri = Uri.parse(whatsappUrl);
-      
+
       if (await canLaunchUrl(uri)) {
         await launchUrl(uri, mode: LaunchMode.externalApplication);
-        
+
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -347,7 +348,7 @@ class WhatsAppAlertButtonCompact extends StatelessWidget {
 
   String _createAlertMessage() {
     final googleMapsUrl = 'https://maps.google.com/?q=$latitude,$longitude';
-    
+
     return '''🚨 ALERTA SOS ACTIVA 🚨
 
 Descripción: $threatDescription${additionalText.isNotEmpty ? ' - $additionalText' : ''}
@@ -363,7 +364,7 @@ Descripción: $threatDescription${additionalText.isNotEmpty ? ' - $additionalTex
 
   String _createWhatsAppUrl(String message) {
     final encodedMessage = Uri.encodeComponent(message);
-    
+
     if (phoneNumber != null && phoneNumber!.isNotEmpty) {
       return 'https://wa.me/$phoneNumber?text=$encodedMessage';
     } else {

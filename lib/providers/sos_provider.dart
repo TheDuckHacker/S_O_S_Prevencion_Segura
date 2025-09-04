@@ -174,7 +174,7 @@ class SosProvider extends ChangeNotifier {
         debugPrint('No se puede grabar sin activar SOS primero');
         return;
       }
-      
+
       _isRecording = true;
 
       // Mostrar notificación de grabación
