@@ -25,12 +25,12 @@ class SosProvider extends ChangeNotifier {
   // Actualizar descripción de amenaza
   void updateThreatDescription(String newDescription) {
     _threatDescription = newDescription;
-    
+
     // Actualizar el último registro en el historial si hay uno activo
     if (_sosHistory.isNotEmpty && _sosHistory.last['status'] == 'active') {
       _sosHistory.last['description'] = newDescription;
     }
-    
+
     notifyListeners();
   }
 

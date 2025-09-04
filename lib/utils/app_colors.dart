@@ -48,4 +48,10 @@ class AppColors {
     end: Alignment.bottomRight,
     colors: [cardBackground, surfaceColor],
   );
+
+  static const LinearGradient backgroundGradient = LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [backgroundColor, cardBackground],
+  );
 }

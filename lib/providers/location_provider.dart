@@ -87,7 +87,12 @@ class LocationProvider extends ChangeNotifier {
     }
   }
 
-  // Obtener ubicación actual
+  // Obtener ubicación actual (método público)
+  Future<void> getCurrentLocation() async {
+    await _getCurrentLocation();
+  }
+
+  // Obtener ubicación actual (método privado)
   Future<void> _getCurrentLocation() async {
     try {
       if (!_hasLocationPermission) {

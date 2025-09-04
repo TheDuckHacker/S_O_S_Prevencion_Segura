@@ -227,7 +227,7 @@ Hola $contactName,
   }) async {
     try {
       final contacts = await getEmergencyContacts();
-      
+
       if (contacts.isEmpty) {
         debugPrint('No hay contactos de emergencia configurados');
         return;
