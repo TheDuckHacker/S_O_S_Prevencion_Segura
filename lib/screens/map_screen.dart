@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../providers/location_provider.dart';
-import '../providers/sos_provider.dart';
 import '../utils/app_colors.dart';
 
 class MapScreen extends StatefulWidget {
@@ -12,116 +11,82 @@ class MapScreen extends StatefulWidget {
   State<MapScreen> createState() => _MapScreenState();
 }
 
-class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
-  late AnimationController _fadeController;
-  late AnimationController _pulseController;
-  late Animation<double> _fadeAnimation;
-  late Animation<double> _pulseAnimation;
-
-  GoogleMapController? _mapController;
-  Set<Marker> _markers = {};
-  bool _isSharingLocation = false;
-  LatLng? _currentPosition;
-
+class _MapScreenState extends State<MapScreen> {
   @override
   void initState() {
     super.initState();
-
-    _fadeController = AnimationController(
-      duration: const Duration(milliseconds: 800),
-      vsync: this,
-    );
-
-    _pulseController = AnimationController(
-      duration: const Duration(seconds: 2),
-      vsync: this,
-    );
-
-    _fadeAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(parent: _fadeController, curve: Curves.easeIn));
-
-    _pulseAnimation = Tween<double>(begin: 1.0, end: 1.1).animate(
-      CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
-    );
-
-    _fadeController.forward();
-    _pulseController.repeat(reverse: true);
-    
-    // Obtener ubicación inicial
     _getCurrentLocation();
   }
 
-  @override
-  void dispose() {
-    _fadeController.dispose();
-    _pulseController.dispose();
-    _mapController?.dispose();
-    super.dispose();
-  }
-
   Future<void> _getCurrentLocation() async {
-    final locationProvider = Provider.of<LocationProvider>(context, listen: false);
+    final locationProvider = Provider.of<LocationProvider>(
+      context,
+      listen: false,
+    );
     await locationProvider.getCurrentLocation();
-    
+  }
+
+  Future<void> _openGoogleMaps() async {
+    final locationProvider = Provider.of<LocationProvider>(
+      context,
+      listen: false,
+    );
     if (locationProvider.currentPosition != null) {
-      setState(() {
-        _currentPosition = LatLng(
-          locationProvider.currentPosition!.latitude,
-          locationProvider.currentPosition!.longitude,
-        );
-        _updateMarkers();
-      });
+      final lat = locationProvider.currentPosition!.latitude;
+      final lng = locationProvider.currentPosition!.longitude;
+      final url = 'https://www.google.com/maps?q=$lat,$lng';
+
+      try {
+        await launchUrl(Uri.parse(url));
+      } catch (e) {
+        _showMessage('Error abriendo Google Maps: $e');
+      }
+    } else {
+      _showMessage('No se pudo obtener la ubicación');
     }
   }
 
-  void _updateMarkers() {
-    if (_currentPosition != null) {
-      setState(() {
-        _markers = {
-          Marker(
-            markerId: const MarkerId('current_location'),
-            position: _currentPosition!,
-            infoWindow: const InfoWindow(
-              title: 'Tu Ubicación',
-              snippet: 'Ubicación actual',
-            ),
-            icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue),
-          ),
-        };
-      });
+  Future<void> _shareLocationViaWhatsApp() async {
+    final locationProvider = Provider.of<LocationProvider>(
+      context,
+      listen: false,
+    );
+    if (locationProvider.currentPosition != null) {
+      final lat = locationProvider.currentPosition!.latitude;
+      final lng = locationProvider.currentPosition!.longitude;
+      final message =
+          'Mi ubicación actual: https://www.google.com/maps?q=$lat,$lng';
+      final url = 'https://wa.me/?text=${Uri.encodeComponent(message)}';
+
+      try {
+        await launchUrl(Uri.parse(url));
+      } catch (e) {
+        _showMessage('Error compartiendo por WhatsApp: $e');
+      }
+    } else {
+      _showMessage('No se pudo obtener la ubicación');
     }
   }
 
-  void _onMapCreated(GoogleMapController controller) {
-    _mapController = controller;
-    if (_currentPosition != null) {
-      controller.animateCamera(
-        CameraUpdate.newLatLngZoom(_currentPosition!, 15.0),
-      );
-    }
+  void _showMessage(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: AppColors.primaryBlue,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
-        decoration: BoxDecoration(
-          gradient: AppColors.backgroundGradient,
-        ),
+        decoration: BoxDecoration(gradient: AppColors.backgroundGradient),
         child: SafeArea(
-          child: FadeTransition(
-            opacity: _fadeAnimation,
-            child: Column(
-              children: [
-                _buildHeader(),
-                Expanded(
-                  child: _buildMapContent(),
-                ),
-                _buildLocationControls(),
-              ],
-            ),
+          child: Column(
+            children: [_buildHeader(), Expanded(child: _buildMapContent())],
           ),
         ),
       ),
@@ -151,110 +116,60 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
   }
 
   Widget _buildMapContent() {
-    return Container(
-      margin: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: Colors.white.withOpacity(0.2),
-          width: 2,
-        ),
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(18),
-        child: _currentPosition != null
-            ? GoogleMap(
-                onMapCreated: _onMapCreated,
-                initialCameraPosition: CameraPosition(
-                  target: _currentPosition!,
-                  zoom: 15.0,
-                ),
-                markers: _markers,
-                myLocationEnabled: true,
-                myLocationButtonEnabled: true,
-                mapType: MapType.normal,
-                zoomControlsEnabled: true,
-                compassEnabled: true,
-                onTap: (LatLng position) {
-                  setState(() {
-                    _currentPosition = position;
-                    _updateMarkers();
-                  });
-                },
-              )
-            : _buildLoadingMap(),
-      ),
+    return Consumer<LocationProvider>(
+      builder: (context, locationProvider, child) {
+        if (locationProvider.currentPosition == null) {
+          return _buildLoadingState();
+        }
+
+        return _buildLocationDisplay(locationProvider);
+      },
     );
   }
 
-  Widget _buildLoadingMap() {
+  Widget _buildLoadingState() {
     return Container(
+      margin: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         gradient: AppColors.cardGradient,
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.white.withOpacity(0.1), width: 1),
       ),
       child: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            AnimatedBuilder(
-              animation: _pulseAnimation,
-              builder: (context, child) {
-                return Transform.scale(
-                  scale: _pulseAnimation.value,
-                  child: Container(
-                    width: 80,
-                    height: 80,
-                    decoration: BoxDecoration(
-                      color: AppColors.lightBlue.withOpacity(0.3),
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: AppColors.lightBlue,
-                        width: 3,
-                      ),
-                    ),
-                    child: const Icon(
-                      Icons.location_on,
-                      color: AppColors.lightBlue,
-                      size: 40,
-                    ),
-                  ),
-                );
-              },
+            const CircularProgressIndicator(
+              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
             ),
             const SizedBox(height: 20),
-            const Text(
+            Text(
               'Obteniendo ubicación...',
-              style: TextStyle(
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
                 color: Colors.white,
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
+                fontWeight: FontWeight.bold,
               ),
             ),
             const SizedBox(height: 10),
-            const Text(
+            Text(
               'Por favor, permite el acceso a la ubicación',
-              style: TextStyle(
-                color: Colors.white70,
-                fontSize: 14,
-              ),
+              style: Theme.of(
+                context,
+              ).textTheme.bodyMedium?.copyWith(color: Colors.white70),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 20),
-            ElevatedButton(
+            ElevatedButton.icon(
               onPressed: _getCurrentLocation,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.lightBlue,
-                padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(25),
-                ),
+              icon: const Icon(Icons.refresh, color: Colors.white),
+              label: const Text(
+                'Reintentar Ubicación',
+                style: TextStyle(color: Colors.white),
               ),
-              child: const Text(
-                'Actualizar Ubicación',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primaryBlue,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
                 ),
               ),
             ),
@@ -264,162 +179,160 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
     );
   }
 
-  Widget _buildLocationControls() {
+  Widget _buildLocationDisplay(LocationProvider locationProvider) {
+    final position = locationProvider.currentPosition!;
+
     return Container(
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        children: [
-          // Estado de ubicación
-          Consumer<LocationProvider>(
-            builder: (context, locationProvider, child) {
-              return Container(
-                padding: const EdgeInsets.all(15),
-                decoration: BoxDecoration(
-                  gradient: AppColors.cardGradient,
-                  borderRadius: BorderRadius.circular(15),
-                  border: Border.all(
-                    color: Colors.white.withOpacity(0.1),
-                    width: 1,
-                  ),
-                ),
-                child: Row(
-                  children: [
-                    Icon(
-                      Icons.location_on,
-                      color: _currentPosition != null ? Colors.green : Colors.orange,
-                      size: 24,
-                    ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            _currentPosition != null ? 'Ubicación obtenida' : 'Obteniendo ubicación...',
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
-                            ),
-                          ),
-                          if (_currentPosition != null) ...[
-                            const SizedBox(height: 5),
-                            Text(
-                              'Lat: ${_currentPosition!.latitude.toStringAsFixed(6)}',
-                              style: const TextStyle(
-                                color: Colors.white70,
-                                fontSize: 12,
-                              ),
-                            ),
-                            Text(
-                              'Lng: ${_currentPosition!.longitude.toStringAsFixed(6)}',
-                              style: const TextStyle(
-                                color: Colors.white70,
-                                fontSize: 12,
-                              ),
-                            ),
-                          ],
-                        ],
-                      ),
-                    ),
-                    IconButton(
-                      onPressed: _getCurrentLocation,
-                      icon: const Icon(Icons.refresh, color: AppColors.lightBlue),
-                      tooltip: 'Actualizar ubicación',
-                    ),
-                  ],
-                ),
-              );
-            },
-          ),
-          const SizedBox(height: 15),
-          
-          // Botón de compartir ubicación
-          GestureDetector(
-            onTap: _toggleLocationSharing,
-            child: AnimatedBuilder(
-              animation: _pulseAnimation,
-              builder: (context, child) {
-                return Transform.scale(
-                  scale: _isSharingLocation ? _pulseAnimation.value : 1.0,
-                  child: Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.symmetric(vertical: 20),
-                    decoration: BoxDecoration(
-                      gradient: _isSharingLocation
-                          ? LinearGradient(
-                              colors: [
-                                AppColors.dangerRed.withOpacity(0.8),
-                                AppColors.sosOrange.withOpacity(0.8),
-                              ],
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                            )
-                          : LinearGradient(
-                              colors: [
-                                AppColors.lightBlue.withOpacity(0.8),
-                                AppColors.primaryBlue.withOpacity(0.8),
-                              ],
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                            ),
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(
-                        color: Colors.white.withOpacity(0.3),
-                        width: 2,
-                      ),
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          _isSharingLocation ? Icons.location_off : Icons.share_location,
-                          color: Colors.white,
-                          size: 28,
-                        ),
-                        const SizedBox(width: 15),
-                        Text(
-                          _isSharingLocation
-                              ? 'Dejar de Compartir Ubicación'
-                              : 'Compartir Ubicación en Tiempo Real',
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                );
-              },
-            ),
-          ),
-        ],
+      margin: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        gradient: AppColors.cardGradient,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.white.withOpacity(0.1), width: 1),
       ),
-    );
-  }
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            // Icono de ubicación
+            Container(
+              width: 100,
+              height: 100,
+              decoration: BoxDecoration(
+                color: AppColors.lightBlue.withOpacity(0.2),
+                shape: BoxShape.circle,
+                border: Border.all(color: AppColors.lightBlue, width: 3),
+              ),
+              child: const Icon(
+                Icons.location_on,
+                color: AppColors.lightBlue,
+                size: 50,
+              ),
+            ),
+            const SizedBox(height: 20),
 
-  void _toggleLocationSharing() {
-    setState(() {
-      _isSharingLocation = !_isSharingLocation;
-    });
+            // Título
+            Text(
+              'Ubicación Actual',
+              style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 20),
 
-    if (_isSharingLocation) {
-      _showMessage('Compartiendo ubicación en tiempo real');
-      // Aquí podrías implementar el envío periódico de ubicación
-    } else {
-      _showMessage('Dejaste de compartir ubicación');
-    }
-  }
+            // Coordenadas
+            Container(
+              padding: const EdgeInsets.all(15),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(15),
+              ),
+              child: Column(
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        'Latitud:',
+                        style: TextStyle(color: Colors.white70, fontSize: 16),
+                      ),
+                      Text(
+                        position.latitude.toStringAsFixed(6),
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        'Longitud:',
+                        style: TextStyle(color: Colors.white70, fontSize: 16),
+                      ),
+                      Text(
+                        position.longitude.toStringAsFixed(6),
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 30),
 
-  void _showMessage(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: AppColors.primaryBlue,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            // Botones de acción
+            Row(
+              children: [
+                Expanded(
+                  child: ElevatedButton.icon(
+                    onPressed: _openGoogleMaps,
+                    icon: const Icon(Icons.map, color: Colors.white),
+                    label: const Text(
+                      'Abrir en Google Maps',
+                      style: TextStyle(color: Colors.white),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primaryBlue,
+                      padding: const EdgeInsets.symmetric(vertical: 15),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: ElevatedButton.icon(
+                    onPressed: _shareLocationViaWhatsApp,
+                    icon: const Icon(Icons.share, color: Colors.white),
+                    label: const Text(
+                      'Compartir por WhatsApp',
+                      style: TextStyle(color: Colors.white),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.green,
+                      padding: const EdgeInsets.symmetric(vertical: 15),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 15),
+
+            // Botón de actualizar
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: _getCurrentLocation,
+                icon: const Icon(Icons.refresh, color: Colors.white),
+                label: const Text(
+                  'Actualizar Ubicación',
+                  style: TextStyle(color: Colors.white),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.lightBlue,
+                  padding: const EdgeInsets.symmetric(vertical: 15),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

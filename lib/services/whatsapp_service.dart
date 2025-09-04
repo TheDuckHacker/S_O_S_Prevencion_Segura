@@ -48,7 +48,6 @@ class WhatsAppService {
       final prefs = await SharedPreferences.getInstance();
       final contactsJson = prefs.getString(_contactsKey) ?? '[]';
       final List<dynamic> contacts = json.decode(contactsJson);
-
       return contacts.cast<Map<String, dynamic>>();
     } catch (e) {
       debugPrint('Error obteniendo contactos: $e');
@@ -71,35 +70,10 @@ class WhatsAppService {
     }
   }
 
-  // Enviar mensaje SOS a todos los contactos
+  // Enviar alerta SOS a todos los contactos
   static Future<void> sendSosToAllContacts({
     required String message,
     required String location,
-    required String timestamp,
-  }) async {
-    try {
-      final contacts = await getEmergencyContacts();
-
-      for (final contact in contacts) {
-        await _sendWhatsAppMessage(
-          phoneNumber: contact['phone'],
-          message: _buildSosMessage(
-            message: message,
-            location: location,
-            timestamp: timestamp,
-            contactName: contact['name'],
-          ),
-        );
-      }
-    } catch (e) {
-      debugPrint('Error enviando SOS a contactos: $e');
-    }
-  }
-
-  // Enviar ubicación en tiempo real a todos los contactos
-  static Future<void> shareLocationToAllContacts({
-    required String location,
-    required String message,
   }) async {
     try {
       final contacts = await getEmergencyContacts();
@@ -110,112 +84,45 @@ class WhatsAppService {
       }
 
       for (final contact in contacts) {
-        await shareLocation(
+        await _sendSosMessage(
           phoneNumber: contact['phone'],
-          location: location,
           message: message,
+          location: location,
+          contactName: contact['name'],
         );
       }
     } catch (e) {
-      debugPrint('Error compartiendo ubicación a todos los contactos: $e');
+      debugPrint('Error enviando SOS a contactos: $e');
     }
   }
 
-  // Enviar ubicación en tiempo real
-  static Future<void> shareLocation({
-    required String phoneNumber,
-    required String location,
-    required String message,
-  }) async {
-    try {
-      final locationMessage = '''
-🛡️ *PREVENCIÓN SEGURA* 🛡️
-
-📍 *Ubicación en Tiempo Real*
-$message
-
-🗺️ *Coordenadas:* $location
-⏰ *Hora:* ${DateTime.now().toString()}
-
-*Esta ubicación fue compartida automáticamente por la app Prevención Segura*
-*Puedes hacer clic en las coordenadas para abrir en Google Maps*
-''';
-
-      await _sendWhatsAppMessage(
-        phoneNumber: phoneNumber,
-        message: locationMessage,
-      );
-    } catch (e) {
-      debugPrint('Error compartiendo ubicación: $e');
-    }
-  }
-
-  // Enviar mensaje personalizado
-  static Future<void> sendCustomMessage({
+  // Enviar mensaje SOS individual
+  static Future<void> _sendSosMessage({
     required String phoneNumber,
     required String message,
-  }) async {
-    try {
-      await _sendWhatsAppMessage(phoneNumber: phoneNumber, message: message);
-    } catch (e) {
-      debugPrint('Error enviando mensaje personalizado: $e');
-    }
-  }
-
-  // Construir mensaje SOS
-  static String _buildSosMessage({
-    required String message,
     required String location,
-    required String timestamp,
     required String contactName,
-  }) {
-    return '''
-🚨 *ALERTA SOS* 🚨
+  }) async {
+    try {
+      final sosMessage = '''
+🚨 *ALERTA DE EMERGENCIA SOS* 🚨
 
 Hola $contactName,
 
-*¡EMERGENCIA!* Necesito ayuda inmediata.
+*Se ha activado una alerta de emergencia SOS.*
 
-📝 *Situación:* $message
+📝 *Descripción:* $message
 📍 *Ubicación:* $location
-⏰ *Hora:* $timestamp
+⏰ *Hora:* ${DateTime.now().toString()}
 
-*Por favor, contacta a las autoridades o ven a ayudarme.*
+*Por favor, contacta inmediatamente o llama a las autoridades.*
 
-*Este mensaje fue enviado automáticamente por la app Prevención Segura*
+*Esta alerta fue enviada automáticamente por la app Prevención Segura*
 ''';
-  }
 
-  // Enviar mensaje por WhatsApp
-  static Future<void> _sendWhatsAppMessage({
-    required String phoneNumber,
-    required String message,
-  }) async {
-    try {
-      // Limpiar número de teléfono
-      final cleanPhone = phoneNumber.replaceAll(RegExp(r'[^\d+]'), '');
-
-      // Crear enlace de WhatsApp
-      final link = WhatsAppUnilink(phoneNumber: cleanPhone, text: message);
-
-      // Abrir WhatsApp
-      if (await canLaunchUrl(link.asUri())) {
-        await launchUrl(link.asUri());
-      } else {
-        debugPrint('No se puede abrir WhatsApp');
-      }
+      await _sendWhatsAppMessage(phoneNumber: phoneNumber, message: sosMessage);
     } catch (e) {
-      debugPrint('Error enviando mensaje por WhatsApp: $e');
-    }
-  }
-
-  // Verificar si WhatsApp está instalado
-  static Future<bool> isWhatsAppInstalled() async {
-    try {
-      const url = 'whatsapp://send';
-      return await canLaunchUrl(Uri.parse(url));
-    } catch (e) {
-      return false;
+      debugPrint('Error enviando mensaje SOS: $e');
     }
   }
 
@@ -284,16 +191,16 @@ Hola $contactName,
   // Enviar mensaje de prueba
   static Future<void> sendTestMessage(String phoneNumber) async {
     try {
-      const testMessage = '''
-🛡️ *PREVENCIÓN SEGURA* 🛡️
+      final testMessage = '''
+✅ *MENSAJE DE PRUEBA* ✅
 
-*Mensaje de Prueba*
+Hola! Este es un mensaje de prueba de la app Prevención Segura.
 
-Hola! Este es un mensaje de prueba de la aplicación Prevención Segura.
+Si recibes este mensaje, significa que las alertas SOS funcionarán correctamente.
 
-Si recibes este mensaje, significa que la configuración está funcionando correctamente.
+⏰ *Hora de prueba:* ${DateTime.now().toString()}
 
-*¡Gracias por ser parte de mi red de seguridad!*
+*App: Prevención Segura - Sistema de Emergencias*
 ''';
 
       await _sendWhatsAppMessage(
@@ -302,6 +209,100 @@ Si recibes este mensaje, significa que la configuración está funcionando corre
       );
     } catch (e) {
       debugPrint('Error enviando mensaje de prueba: $e');
+    }
+  }
+
+  // Enviar mensaje personalizado
+  static Future<void> sendCustomMessage({
+    required String phoneNumber,
+    required String message,
+  }) async {
+    try {
+      await _sendWhatsAppMessage(phoneNumber: phoneNumber, message: message);
+    } catch (e) {
+      debugPrint('Error enviando mensaje personalizado: $e');
+    }
+  }
+
+  // Método principal para enviar mensajes por WhatsApp
+  static Future<void> _sendWhatsAppMessage({
+    required String phoneNumber,
+    required String message,
+  }) async {
+    try {
+      // Limpiar el número de teléfono
+      final cleanPhone = phoneNumber.replaceAll(RegExp(r'[^\d+]'), '');
+
+      // Crear el enlace de WhatsApp
+      final whatsappLink = WhatsAppUnilink(
+        phoneNumber: cleanPhone,
+        text: message,
+      );
+
+      // Abrir WhatsApp
+      final url = whatsappLink.toString();
+      final uri = Uri.parse(url);
+
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+        debugPrint('WhatsApp abierto para: $cleanPhone');
+      } else {
+        debugPrint('No se pudo abrir WhatsApp para: $cleanPhone');
+      }
+    } catch (e) {
+      debugPrint('Error enviando mensaje por WhatsApp: $e');
+    }
+  }
+
+  // Obtener estadísticas de contactos
+  static Future<Map<String, dynamic>> getContactStats() async {
+    try {
+      final contacts = await getEmergencyContacts();
+      return {
+        'totalContacts': contacts.length,
+        'lastUpdated':
+            contacts.isNotEmpty
+                ? contacts
+                    .map((c) => c['addedAt'])
+                    .reduce((a, b) => a.compareTo(b) > 0 ? a : b)
+                : null,
+      };
+    } catch (e) {
+      debugPrint('Error obteniendo estadísticas: $e');
+      return {'totalContacts': 0, 'lastUpdated': null};
+    }
+  }
+
+  // Verificar si WhatsApp está instalado
+  static Future<bool> isWhatsAppInstalled() async {
+    try {
+      final uri = Uri.parse('whatsapp://send?phone=1234567890&text=test');
+      return await canLaunchUrl(uri);
+    } catch (e) {
+      debugPrint('Error verificando WhatsApp: $e');
+      return false;
+    }
+  }
+
+  // Exportar contactos
+  static Future<String> exportContacts() async {
+    try {
+      final contacts = await getEmergencyContacts();
+      return json.encode(contacts);
+    } catch (e) {
+      debugPrint('Error exportando contactos: $e');
+      return '[]';
+    }
+  }
+
+  // Importar contactos
+  static Future<void> importContacts(String contactsJson) async {
+    try {
+      final List<dynamic> contacts = json.decode(contactsJson);
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(_contactsKey, json.encode(contacts));
+    } catch (e) {
+      debugPrint('Error importando contactos: $e');
     }
   }
 }

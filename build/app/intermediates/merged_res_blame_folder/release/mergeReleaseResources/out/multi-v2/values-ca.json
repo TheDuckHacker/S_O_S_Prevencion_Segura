@@ -1,8 +1,25 @@
 {
     "logs": [
         {
-            "outputFile": "com.example.mi_app-mergeReleaseResources-43:/values-ca/values-ca.xml",
+            "outputFile": "com.example.mi_app-mergeReleaseResources-45:/values-ca/values-ca.xml",
             "map": [
+                {
+                    "source": "C:\\Users\\Legion\\.gradle\\caches\\8.10.2\\transforms\\5568a35fadd1ad6d1c703f16a16e5540\\transformed\\jetified-play-services-basement-18.4.0\\res\\values-ca\\values.xml",
+                    "from": {
+                        "startLines": "4",
+                        "startColumns": "0",
+                        "startOffsets": "195",
+                        "endColumns": "130",
+                        "endOffsets": "325"
+                    },
+                    "to": {
+                        "startLines": "44",
+                        "startColumns": "4",
+                        "startOffsets": "4557",
+                        "endColumns": "134",
+                        "endOffsets": "4687"
+                    }
+                },
                 {
                     "source": "C:\\Users\\Legion\\.gradle\\caches\\8.10.2\\transforms\\0098a6e93522fecc805d8900172003dc\\transformed\\preference-1.2.1\\res\\values-ca\\values-ca.xml",
                     "from": {
@@ -38,40 +55,6 @@
                     }
                 },
                 {
-                    "source": "C:\\Users\\Legion\\.gradle\\caches\\8.10.2\\transforms\\abeed4f47a72eff8f5b4e9bf7f2f3c91\\transformed\\jetified-play-services-basement-18.3.0\\res\\values-ca\\values.xml",
-                    "from": {
-                        "startLines": "4",
-                        "startColumns": "0",
-                        "startOffsets": "195",
-                        "endColumns": "130",
-                        "endOffsets": "325"
-                    },
-                    "to": {
-                        "startLines": "44",
-                        "startColumns": "4",
-                        "startOffsets": "4557",
-                        "endColumns": "134",
-                        "endOffsets": "4687"
-                    }
-                },
-                {
-                    "source": "C:\\Users\\Legion\\.gradle\\caches\\8.10.2\\transforms\\9db9b81a577112600e8d2ee7b5450923\\transformed\\jetified-play-services-base-18.3.0\\res\\values-ca\\values.xml",
-                    "from": {
-                        "startLines": "4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20",
-                        "startColumns": "0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0",
-                        "startOffsets": "193,294,442,565,670,816,939,1058,1162,1329,1434,1589,1716,1876,2030,2091,2155",
-                        "endColumns": "100,147,122,104,145,122,118,103,166,104,154,126,159,153,60,63,82",
-                        "endOffsets": "293,441,564,669,815,938,1057,1161,1328,1433,1588,1715,1875,2029,2090,2154,2237"
-                    },
-                    "to": {
-                        "startLines": "36,37,38,39,40,41,42,43,45,46,47,48,49,50,51,52,53",
-                        "startColumns": "4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4",
-                        "startOffsets": "3556,3661,3813,3940,4049,4199,4326,4449,4692,4863,4972,5131,5262,5426,5584,5649,5717",
-                        "endColumns": "104,151,126,108,149,126,122,107,170,108,158,130,163,157,64,67,86",
-                        "endOffsets": "3656,3808,3935,4044,4194,4321,4444,4552,4858,4967,5126,5257,5421,5579,5644,5712,5799"
-                    }
-                },
-                {
                     "source": "C:\\Users\\Legion\\.gradle\\caches\\8.10.2\\transforms\\8cf478dec41eed746328fa8046755ba2\\transformed\\core-1.13.1\\res\\values-ca\\values-ca.xml",
                     "from": {
                         "startLines": "2,3,4,5,6,7,8,9",
@@ -86,6 +69,23 @@
                         "startOffsets": "2825,2921,3023,3122,3219,3325,3430,6706",
                         "endColumns": "95,101,98,96,105,104,125,100",
                         "endOffsets": "2916,3018,3117,3214,3320,3425,3551,6802"
+                    }
+                },
+                {
+                    "source": "C:\\Users\\Legion\\.gradle\\caches\\8.10.2\\transforms\\f6fa56a75284f8e0ea5d27971291f441\\transformed\\jetified-play-services-base-18.5.0\\res\\values-ca\\values.xml",
+                    "from": {
+                        "startLines": "4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20",
+                        "startColumns": "0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0",
+                        "startOffsets": "193,294,442,565,670,816,939,1058,1162,1329,1434,1589,1716,1876,2030,2091,2155",
+                        "endColumns": "100,147,122,104,145,122,118,103,166,104,154,126,159,153,60,63,82",
+                        "endOffsets": "293,441,564,669,815,938,1057,1161,1328,1433,1588,1715,1875,2029,2090,2154,2237"
+                    },
+                    "to": {
+                        "startLines": "36,37,38,39,40,41,42,43,45,46,47,48,49,50,51,52,53",
+                        "startColumns": "4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4",
+                        "startOffsets": "3556,3661,3813,3940,4049,4199,4326,4449,4692,4863,4972,5131,5262,5426,5584,5649,5717",
+                        "endColumns": "104,151,126,108,149,126,122,107,170,108,158,130,163,157,64,67,86",
+                        "endOffsets": "3656,3808,3935,4044,4194,4321,4444,4552,4858,4967,5126,5257,5421,5579,5644,5712,5799"
                     }
                 },
                 {

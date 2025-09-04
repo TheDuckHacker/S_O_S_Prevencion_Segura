@@ -57,6 +57,8 @@
 
 -keep class androidx.recyclerview.widget.RecyclerView { <init>(android.content.Context, android.util.AttributeSet); }
 
+-keep class com.google.maps.android.ui.RotationLayout { <init>(android.content.Context, android.util.AttributeSet); }
+
 
 # End of content from C:\Users\Legion\mi_app\build\app\intermediates\aapt_proguard_file\release\processReleaseResources\aapt_rules.txt
 # The proguard configuration file for the following section is C:\Users\Legion\mi_app\build\app\intermediates\default_proguard_files\global\proguard-android-optimize.txt-8.7.0
@@ -281,7 +283,11 @@
 # Required for window area API reflection guard
 -keep interface androidx.window.area.reflectionguard.* {*;}
 # End of content from C:\Users\Legion\.gradle\caches\8.10.2\transforms\5093ab42d2307deb2d7ac0b7f5718c38\transformed\jetified-window-1.2.0\proguard.txt
-# The proguard configuration file for the following section is C:\Users\Legion\.gradle\caches\8.10.2\transforms\9db9b81a577112600e8d2ee7b5450923\transformed\jetified-play-services-base-18.3.0\proguard.txt
+# The proguard configuration file for the following section is C:\Users\Legion\.gradle\caches\8.10.2\transforms\2a9e53075c7bbb8a3fe673208dc9a9d8\transformed\jetified-play-services-maps-19.2.0\proguard.txt
+
+
+# End of content from C:\Users\Legion\.gradle\caches\8.10.2\transforms\2a9e53075c7bbb8a3fe673208dc9a9d8\transformed\jetified-play-services-maps-19.2.0\proguard.txt
+# The proguard configuration file for the following section is C:\Users\Legion\.gradle\caches\8.10.2\transforms\f6fa56a75284f8e0ea5d27971291f441\transformed\jetified-play-services-base-18.5.0\proguard.txt
 # b/35135904 Ensure that proguard will not strip the mResultGuardian.
 -keepclassmembers class com.google.android.gms.common.api.internal.BasePendingResult {
   com.google.android.gms.common.api.internal.BasePendingResult$ReleasableResultGuardian mResultGuardian;
@@ -289,12 +295,12 @@
 
 
 
-# End of content from C:\Users\Legion\.gradle\caches\8.10.2\transforms\9db9b81a577112600e8d2ee7b5450923\transformed\jetified-play-services-base-18.3.0\proguard.txt
-# The proguard configuration file for the following section is C:\Users\Legion\.gradle\caches\8.10.2\transforms\7b180219ad72ca48e76b8a5127003ab7\transformed\jetified-play-services-tasks-18.1.0\proguard.txt
+# End of content from C:\Users\Legion\.gradle\caches\8.10.2\transforms\f6fa56a75284f8e0ea5d27971291f441\transformed\jetified-play-services-base-18.5.0\proguard.txt
+# The proguard configuration file for the following section is C:\Users\Legion\.gradle\caches\8.10.2\transforms\e565694bd8e7fc6bedaaac67255baf8f\transformed\jetified-play-services-tasks-18.2.0\proguard.txt
 
 
-# End of content from C:\Users\Legion\.gradle\caches\8.10.2\transforms\7b180219ad72ca48e76b8a5127003ab7\transformed\jetified-play-services-tasks-18.1.0\proguard.txt
-# The proguard configuration file for the following section is C:\Users\Legion\.gradle\caches\8.10.2\transforms\abeed4f47a72eff8f5b4e9bf7f2f3c91\transformed\jetified-play-services-basement-18.3.0\proguard.txt
+# End of content from C:\Users\Legion\.gradle\caches\8.10.2\transforms\e565694bd8e7fc6bedaaac67255baf8f\transformed\jetified-play-services-tasks-18.2.0\proguard.txt
+# The proguard configuration file for the following section is C:\Users\Legion\.gradle\caches\8.10.2\transforms\5568a35fadd1ad6d1c703f16a16e5540\transformed\jetified-play-services-basement-18.4.0\proguard.txt
 # Needed when building against pre-Marshmallow SDK.
 -dontwarn android.security.NetworkSecurityPolicy
 
@@ -372,7 +378,7 @@
 
 
 
-# End of content from C:\Users\Legion\.gradle\caches\8.10.2\transforms\abeed4f47a72eff8f5b4e9bf7f2f3c91\transformed\jetified-play-services-basement-18.3.0\proguard.txt
+# End of content from C:\Users\Legion\.gradle\caches\8.10.2\transforms\5568a35fadd1ad6d1c703f16a16e5540\transformed\jetified-play-services-basement-18.4.0\proguard.txt
 # The proguard configuration file for the following section is C:\Users\Legion\.gradle\caches\8.10.2\transforms\3a4dcd3e8c92efa77cfa193b658940d9\transformed\appcompat-1.1.0\proguard.txt
 # Copyright (C) 2018 The Android Open Source Project
 #
@@ -715,6 +721,9 @@
 -dontwarn org.codehaus.mojo.animal_sniffer.*
 
 # End of content from C:\Users\Legion\.gradle\caches\8.10.2\transforms\f4baecc432f8f4388936cce8b37236e1\transformed\rules\lib\META-INF\proguard\okio.pro
+# The proguard configuration file for the following section is C:\Users\Legion\.gradle\caches\8.10.2\transforms\8a63b21759398e83092b56262a073cdf\transformed\jetified-android-maps-utils-3.6.0\proguard.txt
+
+# End of content from C:\Users\Legion\.gradle\caches\8.10.2\transforms\8a63b21759398e83092b56262a073cdf\transformed\jetified-android-maps-utils-3.6.0\proguard.txt
 # The proguard configuration file for the following section is <unknown>
 
 # End of content from <unknown>

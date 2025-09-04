@@ -1,7 +1,7 @@
 {
     "logs": [
         {
-            "outputFile": "com.example.mi_app-mergeReleaseResources-43:/values-night-v8/values-night-v8.xml",
+            "outputFile": "com.example.mi_app-mergeReleaseResources-45:/values-night-v8/values-night-v8.xml",
             "map": [
                 {
                     "source": "C:\\Users\\Legion\\mi_app\\android\\app\\src\\main\\res\\values-night\\styles.xml",

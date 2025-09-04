@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:convert';
 import '../services/notification_service.dart';
 import '../services/whatsapp_service.dart';
 import '../services/recording_service.dart';
@@ -22,6 +23,33 @@ class SosProvider extends ChangeNotifier {
   List<String> get evidenceFiles => _evidenceFiles;
   List<Map<String, dynamic>> get sosHistory => _sosHistory;
 
+  SosProvider() {
+    _loadSosHistory();
+  }
+
+  // Cargar historial de SOS desde SharedPreferences
+  Future<void> _loadSosHistory() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final historyJson = prefs.getString('sos_history') ?? '[]';
+      final List<dynamic> history = json.decode(historyJson);
+      _sosHistory = history.cast<Map<String, dynamic>>();
+      notifyListeners();
+    } catch (e) {
+      debugPrint('Error cargando historial SOS: $e');
+    }
+  }
+
+  // Guardar historial de SOS en SharedPreferences
+  Future<void> _saveSosHistory() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('sos_history', json.encode(_sosHistory));
+    } catch (e) {
+      debugPrint('Error guardando historial SOS: $e');
+    }
+  }
+
   // Actualizar descripción de amenaza
   void updateThreatDescription(String newDescription) {
     _threatDescription = newDescription;
@@ -29,71 +57,49 @@ class SosProvider extends ChangeNotifier {
     // Actualizar el último registro en el historial si hay uno activo
     if (_sosHistory.isNotEmpty && _sosHistory.last['status'] == 'active') {
       _sosHistory.last['description'] = newDescription;
+      _saveSosHistory();
     }
 
     notifyListeners();
   }
 
-  // Compartir ubicación en tiempo real por WhatsApp
-  Future<void> shareLocationViaWhatsApp() async {
-    try {
-      if (_currentLocation.isEmpty) {
-        _currentLocation = await _getCurrentLocation();
-      }
-
-      await WhatsAppService.shareLocationToAllContacts(
-        location: _currentLocation,
-        message: 'Compartiendo mi ubicación actual por seguridad',
-      );
-
-      // Agregar al historial
-      _sosHistory.add({
-        'timestamp': DateTime.now().toIso8601String(),
-        'description': 'Ubicación compartida manualmente',
-        'location': _currentLocation,
-        'status': 'location_shared',
-      });
-
-      notifyListeners();
-    } catch (e) {
-      debugPrint('Error compartiendo ubicación: $e');
-    }
-  }
-
   // Activar SOS
-  Future<void> activateSos(String description) async {
+  Future<void> activateSos() async {
     try {
       _isSosActive = true;
-      _threatDescription = description;
       _currentLocation = await _getCurrentLocation();
 
-      // Agregar a historial
-      _sosHistory.add({
+      // Crear registro de SOS
+      final sosRecord = {
+        'id': DateTime.now().millisecondsSinceEpoch.toString(),
         'timestamp': DateTime.now().toIso8601String(),
-        'description': description,
-        'location': _currentLocation,
         'status': 'active',
-      });
+        'description': _threatDescription,
+        'location': _currentLocation,
+        'evidenceFiles': List<String>.from(_evidenceFiles),
+      };
 
-      // Enviar notificación de alerta SOS
+      _sosHistory.add(sosRecord);
+      await _saveSosHistory();
+
+      // Mostrar notificación
       await NotificationService.showSosAlert(
-        title: '🚨 ALERTA SOS ACTIVADA',
-        body: 'Se ha activado una alerta de emergencia',
+        title: 'SOS Activado',
+        body: 'Alerta de emergencia enviada a contactos',
         location: _currentLocation,
       );
 
-      // Enviar mensaje a todos los contactos de WhatsApp
+      // Enviar por WhatsApp
       await WhatsAppService.sendSosToAllContacts(
-        message: description,
+        message: _threatDescription,
         location: _currentLocation,
-        timestamp: DateTime.now().toString(),
       );
 
-      // Enviar datos en tiempo real al servidor
+      // Enviar datos al servidor
       await RealtimeService.sendEmergencyData(
         userId: 'user_${DateTime.now().millisecondsSinceEpoch}',
+        message: _threatDescription,
         location: _currentLocation,
-        message: description,
         timestamp: DateTime.now().toIso8601String(),
       );
 
@@ -104,20 +110,27 @@ class SosProvider extends ChangeNotifier {
   }
 
   // Desactivar SOS
-  void deactivateSos() {
-    _isSosActive = false;
-    _isRecording = false;
+  Future<void> deactivateSos() async {
+    try {
+      _isSosActive = false;
 
-    // Actualizar último registro en historial
-    if (_sosHistory.isNotEmpty) {
-      _sosHistory.last['status'] = 'resolved';
-      _sosHistory.last['resolvedAt'] = DateTime.now().toIso8601String();
+      // Actualizar el último registro en el historial
+      if (_sosHistory.isNotEmpty && _sosHistory.last['status'] == 'active') {
+        _sosHistory.last['status'] = 'resolved';
+        _sosHistory.last['resolvedAt'] = DateTime.now().toIso8601String();
+        await _saveSosHistory();
+      }
+
+      // Cancelar notificaciones
+      await NotificationService.cancelRecordingNotification();
+
+      notifyListeners();
+    } catch (e) {
+      debugPrint('Error desactivando SOS: $e');
     }
-
-    notifyListeners();
   }
 
-  // Iniciar grabación de evidencia
+  // Iniciar grabación
   Future<void> startRecording() async {
     try {
       _isRecording = true;
@@ -125,7 +138,7 @@ class SosProvider extends ChangeNotifier {
       // Mostrar notificación de grabación
       await NotificationService.showRecordingStarted();
 
-      // Iniciar grabación de audio
+      // Iniciar grabación de video
       await RecordingService.startVideoRecording();
 
       notifyListeners();
@@ -134,7 +147,7 @@ class SosProvider extends ChangeNotifier {
     }
   }
 
-  // Detener grabación de evidencia
+  // Detener grabación
   Future<void> stopRecording() async {
     try {
       _isRecording = false;
@@ -169,76 +182,93 @@ class SosProvider extends ChangeNotifier {
     }
   }
 
-  // Agregar archivo de evidencia
-  void addEvidenceFile(String filePath) {
-    _evidenceFiles.add(filePath);
-    notifyListeners();
-  }
-
   // Obtener ubicación actual
   Future<String> _getCurrentLocation() async {
     try {
-      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
-      if (!serviceEnabled) {
-        return 'Servicio de ubicación deshabilitado';
-      }
-
-      LocationPermission permission = await Geolocator.checkPermission();
-      if (permission == LocationPermission.denied) {
-        permission = await Geolocator.requestPermission();
-        if (permission == LocationPermission.denied) {
-          return 'Permiso de ubicación denegado';
-        }
-      }
-
-      if (permission == LocationPermission.deniedForever) {
-        return 'Permiso de ubicación permanentemente denegado';
-      }
-
-      Position position = await Geolocator.getCurrentPosition(
+      final position = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high,
       );
-
       return '${position.latitude}, ${position.longitude}';
     } catch (e) {
-      return 'Error obteniendo ubicación: $e';
+      debugPrint('Error obteniendo ubicación: $e');
+      return 'Ubicación no disponible';
     }
   }
 
-  // Enviar alerta SOS
-  Future<void> _sendSosAlert() async {
+  // Compartir ubicación en tiempo real por WhatsApp
+  Future<void> shareLocationViaWhatsApp() async {
     try {
-      // Aquí se implementaría el envío real de alertas
-      // Por ahora solo simulamos el envío
-      await Future.delayed(const Duration(seconds: 2));
-      debugPrint('Alerta SOS enviada a contactos de confianza');
-    } catch (e) {
-      debugPrint('Error enviando alerta SOS: $e');
-    }
-  }
-
-  // Cargar historial desde almacenamiento local
-  Future<void> loadSosHistory() async {
-    try {
-      SharedPreferences prefs = await SharedPreferences.getInstance();
-      String? historyJson = prefs.getString('sos_history');
-      if (historyJson != null) {
-        // Aquí se parsearía el JSON del historial
-        // Por ahora mantenemos la lista vacía
+      if (_currentLocation.isEmpty) {
+        _currentLocation = await _getCurrentLocation();
       }
+
+      await WhatsAppService.sendSosToAllContacts(
+        message: 'Compartiendo mi ubicación actual por seguridad',
+        location: _currentLocation,
+      );
+
+      // Agregar al historial
+      _sosHistory.add({
+        'id': DateTime.now().millisecondsSinceEpoch.toString(),
+        'timestamp': DateTime.now().toIso8601String(),
+        'type': 'location_share',
+        'location': _currentLocation,
+        'status': 'completed',
+      });
+
+      await _saveSosHistory();
+      notifyListeners();
     } catch (e) {
-      debugPrint('Error cargando historial SOS: $e');
+      debugPrint('Error compartiendo ubicación: $e');
     }
   }
 
-  // Guardar historial en almacenamiento local
-  Future<void> saveSosHistory() async {
+  // Limpiar historial
+  Future<void> clearHistory() async {
     try {
-      SharedPreferences prefs = await SharedPreferences.getInstance();
-      // Aquí se convertiría el historial a JSON
-      // Por ahora solo simulamos el guardado
+      _sosHistory.clear();
+      await _saveSosHistory();
+      notifyListeners();
     } catch (e) {
-      debugPrint('Error guardando historial SOS: $e');
+      debugPrint('Error limpiando historial: $e');
+    }
+  }
+
+  // Obtener estadísticas
+  Map<String, dynamic> getStats() {
+    final totalSos =
+        _sosHistory.where((record) => record['status'] == 'resolved').length;
+    final activeSos =
+        _sosHistory.where((record) => record['status'] == 'active').length;
+    final totalEvidence = _evidenceFiles.length;
+
+    return {
+      'totalSos': totalSos,
+      'activeSos': activeSos,
+      'totalEvidence': totalEvidence,
+      'lastSos': _sosHistory.isNotEmpty ? _sosHistory.last['timestamp'] : null,
+    };
+  }
+
+  // Exportar historial
+  Future<String> exportHistory() async {
+    try {
+      return json.encode(_sosHistory);
+    } catch (e) {
+      debugPrint('Error exportando historial: $e');
+      return '[]';
+    }
+  }
+
+  // Importar historial
+  Future<void> importHistory(String historyJson) async {
+    try {
+      final List<dynamic> history = json.decode(historyJson);
+      _sosHistory = history.cast<Map<String, dynamic>>();
+      await _saveSosHistory();
+      notifyListeners();
+    } catch (e) {
+      debugPrint('Error importando historial: $e');
     }
   }
 }

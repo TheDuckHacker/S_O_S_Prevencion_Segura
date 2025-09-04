@@ -28,6 +28,10 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
+    <!-- Permisos para Google Maps -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+
     <!-- Permisos de notificaciones -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <!--
@@ -43,9 +47,15 @@
 
             <data android:mimeType="text/plain" />
         </intent>
+        <!-- Needs to be explicitly declared on Android R+ -->
+        <package android:name="com.google.android.apps.maps" />
     </queries>
 
     <uses-permission android:name="android.permission.VIBRATE" />
+
+    <uses-feature
+        android:glEsVersion="0x00020000"
+        android:required="true" />
 
     <permission
         android:name="com.example.mi_app.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
@@ -59,6 +69,12 @@
         android:extractNativeLibs="true"
         android:icon="@mipmap/ic_launcher"
         android:label="Prevención Segura" >
+
+        <!-- Google Maps API Key -->
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="AIzaSyBvOkBwJhXjK9mF8nL2pQrS3tU4vW5xY6z" />
+
         <activity
             android:name="com.example.mi_app.MainActivity"
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode"
@@ -109,6 +125,9 @@
             android:required="false" />
         <uses-library
             android:name="androidx.window.sidecar"
+            android:required="false" /> <!-- Needs to be explicitly declared on P+ -->
+        <uses-library
+            android:name="org.apache.http.legacy"
             android:required="false" />
 
         <activity

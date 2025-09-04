@@ -1,0 +1,1 @@
+ C:\\Users\\Legion\\mi_app\\.dart_tool\\flutter_build\\e9abf7799df59d993eebc2765d66ca93\\native_assets.json: 

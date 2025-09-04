@@ -41,9 +41,16 @@ class _ContactsScreenState extends State<ContactsScreen> {
       return;
     }
 
+    // Validar formato de teléfono
+    final phone = _phoneController.text.trim();
+    if (phone.length < 8) {
+      _showMessage('El número de teléfono debe tener al menos 8 dígitos');
+      return;
+    }
+
     await WhatsAppService.addEmergencyContact(
-      name: _nameController.text,
-      phoneNumber: _phoneController.text,
+      name: _nameController.text.trim(),
+      phoneNumber: phone,
     );
 
     _nameController.clear();
@@ -88,6 +95,8 @@ class _ContactsScreenState extends State<ContactsScreen> {
                   padding: const EdgeInsets.all(20),
                   child: Column(
                     children: [
+                      _buildInfoCard(),
+                      const SizedBox(height: 20),
                       _buildAddContactForm(),
                       const SizedBox(height: 30),
                       _buildContactsList(),
@@ -118,6 +127,38 @@ class _ContactsScreenState extends State<ContactsScreen> {
               fontWeight: FontWeight.bold,
               color: Colors.white,
             ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInfoCard() {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        gradient: AppColors.cardGradient,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.white.withOpacity(0.1), width: 1),
+      ),
+      child: Column(
+        children: [
+          Icon(Icons.info_outline, color: AppColors.lightBlue, size: 40),
+          const SizedBox(height: 15),
+          Text(
+            '¿Cómo Funciona?',
+            style: Theme.of(context).textTheme.titleLarge?.copyWith(
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
+          ),
+          const SizedBox(height: 10),
+          Text(
+            '1. Agrega contactos de confianza\n2. Cuando actives SOS, se enviará automáticamente un mensaje con tu ubicación\n3. También se enviarán grabaciones de evidencia',
+            style: Theme.of(
+              context,
+            ).textTheme.bodyMedium?.copyWith(color: Colors.white70),
+            textAlign: TextAlign.center,
           ),
         ],
       ),
@@ -239,7 +280,7 @@ class _ContactsScreenState extends State<ContactsScreen> {
             ),
             const SizedBox(height: 10),
             Text(
-              'Agrega contactos de confianza para recibir alertas SOS',
+              'Agrega contactos de confianza para recibir alertas SOS automáticamente',
               style: Theme.of(
                 context,
               ).textTheme.bodyMedium?.copyWith(color: Colors.white54),

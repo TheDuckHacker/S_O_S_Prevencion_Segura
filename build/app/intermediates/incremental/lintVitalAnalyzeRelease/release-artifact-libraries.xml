@@ -78,6 +78,20 @@
       externalAnnotations="annotations.zip"
       proguardRules="proguard.txt"/>
   <library
+      name=":@@:google_maps_flutter_android::release"
+      jars="C:\Users\Legion\.gradle\caches\8.10.2\transforms\7161857a79835708d7eab742aadb07ae\transformed\out\jars\classes.jar;C:\Users\Legion\.gradle\caches\8.10.2\transforms\7161857a79835708d7eab742aadb07ae\transformed\out\jars\libs\R.jar"
+      resolved="io.flutter.plugins.googlemaps:google_maps_flutter_android:1.0-SNAPSHOT"
+      partialResultsDir="C:\Users\Legion\mi_app\build\google_maps_flutter_android\intermediates\lint_vital_partial_results\release\lintVitalAnalyzeRelease\out"
+      folder="C:\Users\Legion\.gradle\caches\8.10.2\transforms\7161857a79835708d7eab742aadb07ae\transformed\out"
+      manifest="AndroidManifest.xml"
+      resFolder="res"
+      assetsFolder="assets"
+      lintJar="lint.jar"
+      publicResources="public.txt"
+      symbolFile="R.txt"
+      externalAnnotations="annotations.zip"
+      proguardRules="proguard.txt"/>
+  <library
       name=":@@:path_provider_android::release"
       jars="C:\Users\Legion\.gradle\caches\8.10.2\transforms\0168eb14f37fd838e8961f0eba95c361\transformed\out\jars\classes.jar;C:\Users\Legion\.gradle\caches\8.10.2\transforms\0168eb14f37fd838e8961f0eba95c361\transformed\out\jars\libs\R.jar"
       resolved="io.flutter.plugins.pathprovider:path_provider_android:1.0-SNAPSHOT"
@@ -566,10 +580,10 @@
       externalAnnotations="annotations.zip"
       proguardRules="proguard.txt"/>
   <library
-      name="com.google.android.gms:play-services-base:18.3.0@aar"
-      jars="C:\Users\Legion\.gradle\caches\8.10.2\transforms\9db9b81a577112600e8d2ee7b5450923\transformed\jetified-play-services-base-18.3.0\jars\classes.jar"
-      resolved="com.google.android.gms:play-services-base:18.3.0"
-      folder="C:\Users\Legion\.gradle\caches\8.10.2\transforms\9db9b81a577112600e8d2ee7b5450923\transformed\jetified-play-services-base-18.3.0"
+      name="com.google.android.gms:play-services-maps:19.2.0@aar"
+      jars="C:\Users\Legion\.gradle\caches\8.10.2\transforms\2a9e53075c7bbb8a3fe673208dc9a9d8\transformed\jetified-play-services-maps-19.2.0\jars\classes.jar"
+      resolved="com.google.android.gms:play-services-maps:19.2.0"
+      folder="C:\Users\Legion\.gradle\caches\8.10.2\transforms\2a9e53075c7bbb8a3fe673208dc9a9d8\transformed\jetified-play-services-maps-19.2.0"
       manifest="AndroidManifest.xml"
       resFolder="res"
       assetsFolder="assets"
@@ -579,10 +593,10 @@
       externalAnnotations="annotations.zip"
       proguardRules="proguard.txt"/>
   <library
-      name="com.google.android.gms:play-services-tasks:18.1.0@aar"
-      jars="C:\Users\Legion\.gradle\caches\8.10.2\transforms\7b180219ad72ca48e76b8a5127003ab7\transformed\jetified-play-services-tasks-18.1.0\jars\classes.jar"
-      resolved="com.google.android.gms:play-services-tasks:18.1.0"
-      folder="C:\Users\Legion\.gradle\caches\8.10.2\transforms\7b180219ad72ca48e76b8a5127003ab7\transformed\jetified-play-services-tasks-18.1.0"
+      name="com.google.android.gms:play-services-base:18.5.0@aar"
+      jars="C:\Users\Legion\.gradle\caches\8.10.2\transforms\f6fa56a75284f8e0ea5d27971291f441\transformed\jetified-play-services-base-18.5.0\jars\classes.jar"
+      resolved="com.google.android.gms:play-services-base:18.5.0"
+      folder="C:\Users\Legion\.gradle\caches\8.10.2\transforms\f6fa56a75284f8e0ea5d27971291f441\transformed\jetified-play-services-base-18.5.0"
       manifest="AndroidManifest.xml"
       resFolder="res"
       assetsFolder="assets"
@@ -592,10 +606,23 @@
       externalAnnotations="annotations.zip"
       proguardRules="proguard.txt"/>
   <library
-      name="com.google.android.gms:play-services-basement:18.3.0@aar"
-      jars="C:\Users\Legion\.gradle\caches\8.10.2\transforms\abeed4f47a72eff8f5b4e9bf7f2f3c91\transformed\jetified-play-services-basement-18.3.0\jars\classes.jar"
-      resolved="com.google.android.gms:play-services-basement:18.3.0"
-      folder="C:\Users\Legion\.gradle\caches\8.10.2\transforms\abeed4f47a72eff8f5b4e9bf7f2f3c91\transformed\jetified-play-services-basement-18.3.0"
+      name="com.google.android.gms:play-services-tasks:18.2.0@aar"
+      jars="C:\Users\Legion\.gradle\caches\8.10.2\transforms\e565694bd8e7fc6bedaaac67255baf8f\transformed\jetified-play-services-tasks-18.2.0\jars\classes.jar"
+      resolved="com.google.android.gms:play-services-tasks:18.2.0"
+      folder="C:\Users\Legion\.gradle\caches\8.10.2\transforms\e565694bd8e7fc6bedaaac67255baf8f\transformed\jetified-play-services-tasks-18.2.0"
+      manifest="AndroidManifest.xml"
+      resFolder="res"
+      assetsFolder="assets"
+      lintJar="lint.jar"
+      publicResources="public.txt"
+      symbolFile="R.txt"
+      externalAnnotations="annotations.zip"
+      proguardRules="proguard.txt"/>
+  <library
+      name="com.google.android.gms:play-services-basement:18.4.0@aar"
+      jars="C:\Users\Legion\.gradle\caches\8.10.2\transforms\5568a35fadd1ad6d1c703f16a16e5540\transformed\jetified-play-services-basement-18.4.0\jars\classes.jar"
+      resolved="com.google.android.gms:play-services-basement:18.4.0"
+      folder="C:\Users\Legion\.gradle\caches\8.10.2\transforms\5568a35fadd1ad6d1c703f16a16e5540\transformed\jetified-play-services-basement-18.4.0"
       manifest="AndroidManifest.xml"
       resFolder="res"
       assetsFolder="assets"
@@ -969,6 +996,19 @@
       name="com.google.code.gson:gson:2.8.9@jar"
       jars="C:\Users\Legion\.gradle\caches\modules-2\files-2.1\com.google.code.gson\gson\2.8.9\8a432c1d6825781e21a02db2e2c33c5fde2833b9\gson-2.8.9.jar"
       resolved="com.google.code.gson:gson:2.8.9"/>
+  <library
+      name="com.google.maps.android:android-maps-utils:3.6.0@aar"
+      jars="C:\Users\Legion\.gradle\caches\8.10.2\transforms\8a63b21759398e83092b56262a073cdf\transformed\jetified-android-maps-utils-3.6.0\jars\classes.jar"
+      resolved="com.google.maps.android:android-maps-utils:3.6.0"
+      folder="C:\Users\Legion\.gradle\caches\8.10.2\transforms\8a63b21759398e83092b56262a073cdf\transformed\jetified-android-maps-utils-3.6.0"
+      manifest="AndroidManifest.xml"
+      resFolder="res"
+      assetsFolder="assets"
+      lintJar="lint.jar"
+      publicResources="public.txt"
+      symbolFile="R.txt"
+      externalAnnotations="annotations.zip"
+      proguardRules="proguard.txt"/>
   <library
       name="com.google.guava:listenablefuture:1.0@jar"
       jars="C:\Users\Legion\.gradle\caches\modules-2\files-2.1\com.google.guava\listenablefuture\1.0\c949a840a6acbc5268d088e47b04177bf90b3cad\listenablefuture-1.0.jar"
