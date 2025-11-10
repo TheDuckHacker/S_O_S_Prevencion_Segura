@@ -73,7 +73,7 @@ dependencies:
   http: ^1.2.2
   
   # Encriptación
-  crypto: ^3.0.5
+  crypto: ^3.0.7
   
   # Maps
   google_maps_flutter: ^2.6.1
