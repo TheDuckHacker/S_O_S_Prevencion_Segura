@@ -70,7 +70,7 @@ dependencies:
   # workmanager: ^0.5.2  # Removido por problemas de compatibilidad
   
   # HTTP para envío de datos
-  http: ^1.2.2
+  http: ^1.6.0
   
   # Encriptación
   crypto: ^3.0.5
